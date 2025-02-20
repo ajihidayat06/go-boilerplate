@@ -5,31 +5,32 @@ import (
 	"net/http"
 )
 
-type APIResponse[T any] struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
-	Data    T      `json:"data"`
-	Error   string `json:"error"`
+type APIResponse struct {
+	Status  int         `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Error   string      `json:"error"`
 }
 
-func SetResponseAPI[T any](c *fiber.Ctx, status int, message, err string, data T) error {
-	response := APIResponse[T]{
+func SetResponseAPI(c *fiber.Ctx, status int, message, err string, data interface{}) error {
+	response := APIResponse{
 		Status:  status,
 		Message: message,
 		Data:    data,
 		Error:   err,
 	}
+
 	return c.Status(status).JSON(response)
 }
 
-func SetResponseOK[T any](c *fiber.Ctx, message string, data T) error {
-	return SetResponseAPI[T](c, http.StatusOK, message, "", data)
+func SetResponseOK(c *fiber.Ctx, message string, data interface{}) error {
+	return SetResponseAPI(c, http.StatusOK, message, "", data)
 }
 
 func SetResponseBadRequest(c *fiber.Ctx, message string, err error) error {
-	return SetResponseAPI[any](c, http.StatusBadRequest, message, err.Error(), nil)
+	return SetResponseAPI(c, http.StatusBadRequest, message, err.Error(), nil)
 }
 
 func SetResponseInternalServerError(c *fiber.Ctx, message string, err error) error {
-	return SetResponseAPI[any](c, http.StatusInternalServerError, message, err.Error(), nil)
+	return SetResponseAPI(c, http.StatusInternalServerError, message, err.Error(), nil)
 }

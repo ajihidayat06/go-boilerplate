@@ -29,7 +29,7 @@ func (h *UserController) Register(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Failed to register user", err)
 	}
 
-	return utils.SetResponseOK[any](c, "success register user", nil)
+	return utils.SetResponseOK(c, "success register user", nil)
 }
 
 func (h *UserController) Login(c *fiber.Ctx) error {

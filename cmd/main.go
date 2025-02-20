@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"go-boilerplate/config"
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/router"
+	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 	"log"
 	"os"
@@ -16,11 +18,19 @@ func main() {
 
 	config.LoadEnv()
 	db := config.InitDatabase()
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: middleware.ErrorHandler,
+	})
 	//config.RunMigrations()
+
+	// Security middleware: Helmet untuk secure headers
+	app.Use(helmet.New())
+	// CORS middleware
+	app.Use(config.CorsConfig())
 
 	app.Use(middleware.LoggingMiddleware)
 
+	utils.InitValidator()
 	router.SetupRoutes(app, db)
 
 	port := os.Getenv("PORT")

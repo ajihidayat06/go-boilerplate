@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/usecase"
@@ -18,13 +20,20 @@ func NewUserController(userUC usecase.UserUseCase) *UserController {
 }
 
 func (h *UserController) Register(c *fiber.Ctx) error {
-	user := new(models.User)
-	if err := c.BodyParser(user); err != nil {
+	var reqUser request.ReqUser
+	if err := c.BodyParser(reqUser); err != nil {
 		logger.Error("Failed to parse request body", err)
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	if err := h.UserUC.RegisterUser(user); err != nil {
+	ok, errMsg := utils.ValidateRequest(reqUser, reqUser.GenerateReqUserErrorMessage())
+	if !ok {
+		err := fmt.Errorf("%s", errMsg)
+		logger.Error("error validate request ", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	if err := h.UserUC.RegisterUser(&reqUser); err != nil {
 		logger.Error("Failed to register user", err)
 		return utils.SetResponseBadRequest(c, "Failed to register user", err)
 	}

@@ -26,11 +26,11 @@ func InitDatabase() *gorm.DB {
 func CorsConfig() fiber.Handler {
 	return cors.New(cors.Config{
 		//AllowOrigins:     "https://example.com, https://www.example.com",
-		AllowOrigins:     "*",
-		AllowMethods:     "GET,POST,PUT,DELETE",
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
-		ExposeHeaders:    "Content-Length",
-		AllowCredentials: true,
-		MaxAge:           3600,
+		AllowOrigins:  "*",
+		AllowMethods:  "GET,POST,PUT,DELETE",
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
+		ExposeHeaders: "Content-Length",
+		//AllowCredentials: true,
+		MaxAge: 3600,
 	})
 }

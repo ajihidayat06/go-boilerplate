@@ -14,3 +14,11 @@ func InitUser(db *gorm.DB) *controllers.UserController {
 
 	return userController
 }
+
+func InitAuth(db *gorm.DB) *controllers.AuthController {
+	userRepo := repo.NewUserRepository(db)
+	authUC := usecase.NewAuthUseCase(userRepo)
+	authController := controllers.NewAuthController(authUC)
+
+	return authController
+}

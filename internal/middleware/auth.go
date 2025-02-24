@@ -1,18 +1,23 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"go-boilerplate/internal/models"
+	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 	"os"
 	"strings"
 	"time"
 )
 
-func GenerateToken(userID uint) (string, error) {
+func GenerateTokenUser(user models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token berlaku 24 jam
+		"user_id":          user.ID,
+		"role_id":          user.RoleID,
+		"role_permissions": user.Permissions,
+		"exp":              time.Now().Add(time.Hour * 24).Unix(), // Token berlaku 24 jam
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -20,39 +25,98 @@ func GenerateToken(userID uint) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func AuthMiddleware(c *fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		logger.Error("Missing Authorization header", nil)
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-	}
-
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	secret := os.Getenv("JWT_SECRET")
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			logger.Error("Unexpected signing method", nil)
-			return nil, fiber.ErrUnauthorized
+func AuthMiddleware(menuAction string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Ambil header Authorization
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			logger.Error("Missing Authorization header", nil)
+			return utils.SetResponseUnauthorized(c, "Unauthorized")
 		}
-		return []byte(secret), nil
-	})
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
+
+		// Hapus prefix "Bearer " jika ada
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		secret := os.Getenv("JWT_SECRET")
+
+		// Parse token JWT
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				logger.Error("Unexpected signing method", nil)
+				return nil, fiber.ErrUnauthorized
+			}
+			return []byte(secret), nil
+		})
+		if err != nil {
+			return utils.SetResponseUnauthorized(c, "Invalid or expired token")
+		}
+
+		// Ambil claims dan periksa validitas token
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			return utils.SetResponseUnauthorized(c, "Invalid token")
+		}
+
+		// Cek expired
+		exp := int64(claims["exp"].(float64))
+		if time.Now().Unix() > exp {
+			return utils.SetResponseUnauthorized(c, "Token expired")
+		}
+
+		rolePermissionsInf, exists := claims["role_permissions"]
+		if !exists {
+			return utils.SetResponseForbiden(c, "Permissions deny")
+		}
+
+		// Konversi role_permissions ke []models.Permissions
+		rawPermissions, ok := rolePermissionsInf.([]interface{})
+		if !ok {
+			return utils.SetResponseForbiden(c, "Invalid permissions data")
+		}
+
+		fmt.Println(rawPermissions)
+		var permissions []models.Permissions
+		for _, item := range rawPermissions {
+			// Pastikan item adalah map[string]interface{} sehingga kita bisa meng-cast field-nya
+			fmt.Println(item)
+			if permMap, ok := item.(map[string]interface{}); ok {
+				permission := models.Permissions{
+					GroupMenu: permMap["group_menu"].(string),
+					Action:    permMap["action"].(string),
+				}
+				permissions = append(permissions, permission)
+			} else {
+				return utils.SetResponseForbiden(c, "Invalid permissions format")
+			}
+		}
+
+		// Validasi apakah user memiliki permission sesuai menuAction
+		isValid := validateUserScopePermission(permissions, menuAction)
+		if !isValid {
+			return utils.SetResponseForbiden(c, "Permissions deny")
+		}
+
+		// Simpan user_id ke context agar bisa digunakan di handler selanjutnya
+		c.Locals("user_id", uint(claims["user_id"].(float64)))
+		return c.Next()
+	}
+}
+
+func validateUserScopePermission(userPermissions []models.Permissions, menuAction string) bool {
+	if len(userPermissions) == 0 {
+		return false
 	}
 
-	// Validasi apakah token sudah expired
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
+	parts := strings.Split(menuAction, ":")
+	if len(parts) != 2 {
+		return false
 	}
+	menu := parts[0]
+	action := parts[1]
 
-	exp := int64(claims["exp"].(float64)) // Ambil waktu expired
-	if time.Now().Unix() > exp {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Token expired"})
+	for _, permission := range userPermissions {
+		if permission.GroupMenu == menu && permission.Action == action {
+			return true
+		}
 	}
-
-	// Simpan user_id ke context agar bisa digunakan di handler
-	c.Locals("user_id", uint(claims["user_id"].(float64)))
-	return c.Next()
+	return false
 }

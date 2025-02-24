@@ -6,9 +6,17 @@ type ReqUser struct {
 	Email string `json:"email"`
 }
 
-func (ReqUser) GenerateReqUserErrorMessage() map[string]string {
-	reqUserErrorMessage := make(map[string]string)
-	reqUserErrorMessage["name"] = "name required"
-	reqUserErrorMessage["email"] = "email not valid"
-	return reqUserErrorMessage
+var ReqUserErrorMessage = map[string]string{
+	"name":  "name required",
+	"email": "email not valid",
+}
+
+type ReqLogin struct {
+	UsenameOrEmail string `json:"usename_or_email"`
+	Password       string `json:"password"`
+}
+
+var ReqLoginErrorMessage = map[string]string{
+	"usename_or_email": "invalid username or email",
+	"password":         "invalid password",
 }

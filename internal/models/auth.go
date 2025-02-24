@@ -3,11 +3,12 @@ package models
 import "time"
 
 type Roles struct {
-	ID        int64     `json:"id"`
-	Code      string    `json:"code"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID              int64              `json:"id"`
+	Code            string             `json:"code"`
+	Name            string             `json:"name"`
+	CreatedAt       time.Time          `json:"created_at"`
+	UpdatedAt       time.Time          `json:"updated_at"`
+	RolePermissions *[]RolePermissions `json:"role_permissions" gorm:"foreignKey:RoleID"`
 }
 
 type Permissions struct {
@@ -21,9 +22,10 @@ type Permissions struct {
 }
 
 type RolePermissions struct {
-	ID            int64     `json:"id"`
-	RoleID        int64     `json:"role_id"`
-	PermissionsID int64     `json:"permissions_id"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID            int64       `json:"id"`
+	RoleID        int64       `json:"role_id"`
+	PermissionsID int64       `json:"permissions_id"`
+	CreatedAt     time.Time   `json:"created_at"`
+	UpdatedAt     time.Time   `json:"updated_at"`
+	Permissions   Permissions `json:"permissions" gorm:"foreignKey:PermissionsID"`
 }

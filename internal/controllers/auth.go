@@ -21,7 +21,7 @@ func NewAuthController(
 	return &AuthController{AuthUsecase: authUC}
 }
 
-func (h *AuthController) Register(c *fiber.Ctx) error {
+func (ctrl *AuthController) Register(c *fiber.Ctx) error {
 	var reqUser request.ReqUser
 	if err := c.BodyParser(&reqUser); err != nil {
 		logger.Error("Failed to parse request body", err)
@@ -35,7 +35,7 @@ func (h *AuthController) Register(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	if err := h.AuthUsecase.RegisterUser(&reqUser); err != nil {
+	if err := ctrl.AuthUsecase.RegisterUser(c.Context(), &reqUser); err != nil {
 		logger.Error("Failed to register user", err)
 		return utils.SetResponseBadRequest(c, "Failed to register user", err)
 	}
@@ -43,7 +43,7 @@ func (h *AuthController) Register(c *fiber.Ctx) error {
 	return utils.SetResponseOK(c, "success register user", nil)
 }
 
-func (h *AuthController) Login(c *fiber.Ctx) error {
+func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	var reqLogin request.ReqLogin
 	if err := c.BodyParser(&reqLogin); err != nil {
 		logger.Error("Failed to parse login request", err)
@@ -51,7 +51,7 @@ func (h *AuthController) Login(c *fiber.Ctx) error {
 	}
 
 	// get user by (email or username) and password
-	user, err := h.AuthUsecase.Login(&reqLogin)
+	user, err := ctrl.AuthUsecase.Login(c.Context(), &reqLogin)
 	if err != nil {
 		logger.Error("login failed", err)
 		return utils.SetResponseBadRequest(c, "login failed", err)

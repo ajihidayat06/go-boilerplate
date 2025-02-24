@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"go-boilerplate/internal/models"
@@ -12,10 +11,11 @@ import (
 	"time"
 )
 
-func GenerateTokenUser(user models.User) (string, error) {
+func GenerateTokenUser(user models.UserLogin) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":          user.ID,
 		"role_id":          user.RoleID,
+		"role_name":        user.RoleName,
 		"role_permissions": user.Permissions,
 		"exp":              time.Now().Add(time.Hour * 24).Unix(), // Token berlaku 24 jam
 	}
@@ -73,11 +73,9 @@ func AuthMiddleware(menuAction string) fiber.Handler {
 			return utils.SetResponseForbiden(c, "Invalid permissions data")
 		}
 
-		fmt.Println(rawPermissions)
 		var permissions []models.Permissions
 		for _, item := range rawPermissions {
 			// Pastikan item adalah map[string]interface{} sehingga kita bisa meng-cast field-nya
-			fmt.Println(item)
 			if permMap, ok := item.(map[string]interface{}); ok {
 				permission := models.Permissions{
 					GroupMenu: permMap["group_menu"].(string),
@@ -97,6 +95,8 @@ func AuthMiddleware(menuAction string) fiber.Handler {
 
 		// Simpan user_id ke context agar bisa digunakan di handler selanjutnya
 		c.Locals("user_id", uint(claims["user_id"].(float64)))
+		c.Locals("role_id", uint(claims["user_id"].(float64)))
+		c.Locals("role_name", claims["role_name"].(string))
 		return c.Next()
 	}
 }

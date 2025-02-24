@@ -29,6 +29,7 @@ func main() {
 	app.Use(config.CorsConfig())
 
 	app.Use(middleware.LoggingMiddleware)
+	app.Use(middleware.RecoverMiddleware())
 
 	utils.InitValidator()
 	router.SetupRoutes(app, db)

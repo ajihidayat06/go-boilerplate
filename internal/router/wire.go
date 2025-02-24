@@ -9,7 +9,7 @@ import (
 
 func InitUser(db *gorm.DB) *controllers.UserController {
 	userRepo := repo.NewUserRepository(db)
-	userUC := usecase.NewUserUseCase(userRepo)
+	userUC := usecase.NewUserUseCase(db, userRepo)
 	userController := controllers.NewUserController(userUC)
 
 	return userController
@@ -17,7 +17,7 @@ func InitUser(db *gorm.DB) *controllers.UserController {
 
 func InitAuth(db *gorm.DB) *controllers.AuthController {
 	userRepo := repo.NewUserRepository(db)
-	authUC := usecase.NewAuthUseCase(userRepo)
+	authUC := usecase.NewAuthUseCase(db, userRepo)
 	authController := controllers.NewAuthController(authUC)
 
 	return authController

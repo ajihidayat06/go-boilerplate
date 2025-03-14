@@ -8,17 +8,22 @@ type Roles struct {
 	Name            string             `json:"name"`
 	CreatedAt       time.Time          `json:"created_at"`
 	UpdatedAt       time.Time          `json:"updated_at"`
+	CreatedBy       int64              `json:"created_by"`
+	UpdatedBy       int64              `json:"updated_by"`
 	RolePermissions *[]RolePermissions `json:"role_permissions" gorm:"foreignKey:RoleID"`
 }
 
 type Permissions struct {
-	ID        int64     `json:"id"`
-	Code      string    `json:"code"`
-	Name      string    `json:"name"`
-	Action    string    `json:"action"`
-	GroupMenu string    `json:"group_menu"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	Code        string    `json:"code"`
+	Name        string    `json:"name"`
+	Action      string    `json:"action"`
+	GroupMenu   string    `json:"group_menu"`
+	AccessScope string    `json:"access_scope"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedBy   int64     `json:"created_by"`
+	UpdatedBy   int64     `json:"updated_by"`
 }
 
 type RolePermissions struct {
@@ -27,5 +32,7 @@ type RolePermissions struct {
 	PermissionsID int64       `json:"permissions_id"`
 	CreatedAt     time.Time   `json:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at"`
+	CreatedBy     int64       `json:"created_by"`
+	UpdatedBy     int64       `json:"updated_by"`
 	Permissions   Permissions `json:"permissions" gorm:"foreignKey:PermissionsID"`
 }

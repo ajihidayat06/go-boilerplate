@@ -1,4 +1,4 @@
-package usecase
+package dashboard
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 )
 
 type AuthUseCase interface {
-	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
-	RegisterUser(ctx context.Context, user *request.ReqUser) error
+	LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
+	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 }
 
 type authUseCase struct {
@@ -25,14 +25,14 @@ func NewAuthUseCase(db *gorm.DB, userRepo repo.UserRepository) AuthUseCase {
 	}
 }
 
-func (u *authUseCase) RegisterUser(ctx context.Context, reqUser *request.ReqUser) error {
+func (u *authUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
 	//Mapping request user ke model user
 
 	user := models.User{}
-	return u.UserRepo.Create(&user)
+	return u.UserRepo.Create(ctx, &user)
 }
 
-func (u authUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+func (u authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
 	// get user by (username or email) and password
 	var (
 		rolePermissions []models.RolePermissions
@@ -67,7 +67,7 @@ func (u authUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.U
 		Roles:    &roles,
 	}
 
-	//userData, err := u.UserRepo.Login(req.UsenameOrEmail, req.Password)
+	//userData, err := u.UserRepo.LoginDashboard(ctx, req.UsenameOrEmail, req.Password)
 	//if err != nil {
 	//	return models.User{}, err
 	//}

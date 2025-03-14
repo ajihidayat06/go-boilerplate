@@ -5,13 +5,6 @@ const (
 )
 
 const (
-	ActionCreate = "create"
-	ActionRead   = "read"
-	ActionUpdate = "update"
-	ActionDelete = "delete"
-)
-
-const (
-	MenuUserActionCreate = MenuGroupUser + ":" + ActionCreate
-	MenuUserActionRead   = MenuGroupUser + ":" + ActionRead
+	MenuUserActionWrite = MenuGroupUser + ":" + AuthActionWrite
+	MenuUserActionRead  = MenuGroupUser + ":" + AuthActionRead
 )

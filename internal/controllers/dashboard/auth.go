@@ -1,4 +1,4 @@
-package controllers
+package dashboard
 
 import (
 	"fmt"
@@ -6,22 +6,22 @@ import (
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/middleware"
-	"go-boilerplate/internal/usecase"
+	"go-boilerplate/internal/usecase/dashboard"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 )
 
 type AuthController struct {
-	AuthUsecase usecase.AuthUseCase
+	AuthUsecase dashboard.AuthUseCase
 }
 
 func NewAuthController(
-	authUC usecase.AuthUseCase,
+	authUC dashboard.AuthUseCase,
 ) *AuthController {
 	return &AuthController{AuthUsecase: authUC}
 }
 
-func (ctrl *AuthController) Register(c *fiber.Ctx) error {
+func (ctrl *AuthController) CreateUserDashboard(c *fiber.Ctx) error {
 	var reqUser request.ReqUser
 	if err := c.BodyParser(&reqUser); err != nil {
 		logger.Error("Failed to parse request body", err)
@@ -35,7 +35,7 @@ func (ctrl *AuthController) Register(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	if err := ctrl.AuthUsecase.RegisterUser(c.Context(), &reqUser); err != nil {
+	if err := ctrl.AuthUsecase.CreateUserDashboard(c.Context(), &reqUser); err != nil {
 		logger.Error("Failed to register user", err)
 		return utils.SetResponseBadRequest(c, "Failed to register user", err)
 	}
@@ -51,13 +51,13 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	}
 
 	// get user by (email or username) and password
-	user, err := ctrl.AuthUsecase.Login(c.Context(), &reqLogin)
+	user, err := ctrl.AuthUsecase.LoginDashboard(c.Context(), &reqLogin)
 	if err != nil {
 		logger.Error("login failed", err)
 		return utils.SetResponseBadRequest(c, "login failed", err)
 	}
 
-	token, err := middleware.GenerateTokenUser(user)
+	token, err := middleware.GenerateTokenUserDashboard(user)
 	if err != nil {
 		logger.Error("Failed to generate token", err)
 		return utils.SetResponseInternalServerError(c, "Failed to generate token", err)

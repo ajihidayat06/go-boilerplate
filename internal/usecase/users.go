@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
@@ -10,7 +9,8 @@ import (
 )
 
 type UserUseCase interface {
-	RegisterUser(ctx context.Context, user *request.ReqUser) error
+	Register(ctx context.Context, reqUser *request.ReqUser) error
+	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
 	Profile(ctx context.Context, user request.ReqUser) (models.User, error)
 }
 
@@ -26,24 +26,15 @@ func NewUserUseCase(db *gorm.DB, userRepo repo.UserRepository) UserUseCase {
 	}
 }
 
-func (u *userUseCase) RegisterUser(ctx context.Context, reqUser *request.ReqUser) error {
-	//Mapping request user ke model user
-	namaSaya := "aji"
-	fmt.Println(namaSaya)
-	err := processWithTx(u.db, func(tx *gorm.DB) (err error) {
-
-		namaSaya = "Santoso"
-		return
-	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(namaSaya)
-
+func (u *userUseCase) Register(ctx context.Context, reqUser *request.ReqUser) error {
 	user := models.User{}
-	return u.UserRepo.Create(&user)
+	return u.UserRepo.Create(ctx, &user)
+}
+
+func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+	// get user by (username or email) and password
+	user := models.UserLogin{}
+	return user, nil
 }
 
 func (u *userUseCase) Profile(ctx context.Context, user request.ReqUser) (models.User, error) {

@@ -8,7 +8,9 @@
         role_id INTEGER NOT NULL,
         branch_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER,
         CONSTRAINT user_pkey PRIMARY KEY (id)
     )
 
@@ -17,7 +19,9 @@
         code VARCHAR NOT NULL,
         name VARCHAR,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER,
         CONSTRAINT roles_pkey PRIMARY KEY (id)
     )
 
@@ -27,8 +31,11 @@
         name VARCHAR,
         action VARCHAR,LL
         group_menu VARCHAR,
+        access_scope VARCHAR CHECK (access_scope IN ('own', 'all')) DEFAULT 'own',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER,
         CONSTRAINT permissions_pkey PRIMARY KEY (id)
     )
 
@@ -37,7 +44,9 @@
         role_id INTEGER,
         permissions_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER,
         CONSTRAINT roles_permissions_pkey PRIMARY KEY (id)
     )
 

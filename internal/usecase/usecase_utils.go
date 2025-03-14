@@ -1,6 +1,8 @@
 package usecase
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 func processWithTx(db *gorm.DB, fn func(tx *gorm.DB) error) error {
 	tx := db.Begin()

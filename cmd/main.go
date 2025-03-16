@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"go-boilerplate/config"
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/router"
@@ -10,6 +8,9 @@ import (
 	"go-boilerplate/pkg/logger"
 	"log"
 	"os"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 )
 
 func main() {

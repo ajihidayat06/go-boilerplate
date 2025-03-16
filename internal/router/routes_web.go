@@ -5,7 +5,8 @@ import (
 	"go-boilerplate/internal/controllers"
 )
 
-func UserWebRoutes(api fiber.Router, user *controllers.UserController) {
+func UserRoutesWeb(api fiber.Router, handler *controllers.UserController) {
 	userRoute := api.Group("/user")
-	userRoute.Get("/profile", user.Profile)
+	
+	userRoute.Get("/profile", handler.Profile)
 }

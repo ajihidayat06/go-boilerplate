@@ -1,16 +1,19 @@
-package dashboard
+package usecase
 
 import (
 	"context"
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
+
 	"gorm.io/gorm"
 )
 
 type AuthUseCase interface {
 	LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
-	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
+	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
+	LogoutDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
+	Logout(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
 }
 
 type authUseCase struct {
@@ -23,13 +26,6 @@ func NewAuthUseCase(db *gorm.DB, userRepo repo.UserRepository) AuthUseCase {
 		db:       db,
 		UserRepo: userRepo,
 	}
-}
-
-func (u *authUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
-	//Mapping request user ke model user
-
-	user := models.User{}
-	return u.UserRepo.Create(ctx, &user)
 }
 
 func (u authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
@@ -92,4 +88,19 @@ func (u authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) 
 	}
 
 	return userLogin, nil
+}
+
+// Login implements AuthUseCase.
+func (u *authUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+	panic("unimplemented")
+}
+
+// Logout implements AuthUseCase.
+func (u *authUseCase) Logout(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+	panic("unimplemented")
+}
+
+// LogoutDashboard implements AuthUseCase.
+func (u *authUseCase) LogoutDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+	panic("unimplemented")
 }

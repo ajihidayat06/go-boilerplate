@@ -136,7 +136,7 @@ func GenerateTokenUser(user models.UserLogin) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func AuthMiddleware(menuAction string) fiber.Handler {
+func AuthMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Ambil header Authorization
 		authHeader := c.Get("Authorization")

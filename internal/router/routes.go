@@ -1,6 +1,9 @@
 package router
 
 import (
+	"go-boilerplate/internal/constanta"
+	"go-boilerplate/internal/middleware"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -13,11 +16,14 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 
 func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	auth := InitAuth(db)
+	userDashboard := InitUserDahboard(db)
 
 	api := app.Group("/api/dashboard")
 	// Public routes
-	api.Post("/login", auth.Login)
-	UserDashboardRoutes(api, auth)
+	api.Post("/login", auth.LoginDashboard)
+	api.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.AuthActionRead), auth.LogoutDashboard)
+
+	UserRoutesDashboard(api, userDashboard)
 }
 
 func WebRoute(app *fiber.App, db *gorm.DB) {
@@ -27,7 +33,8 @@ func WebRoute(app *fiber.App, db *gorm.DB) {
 
 	api.Post("/login", user.Login)
 	api.Post("/register", user.Register)
+	api.Post("/logout", middleware.AuthMiddleware(), user.Logout)
 
 	// Protected routes
-	UserWebRoutes(api, user)
+	UserRoutesWeb(api, user)
 }

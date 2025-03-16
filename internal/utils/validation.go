@@ -2,10 +2,11 @@ package utils
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
 	"go-boilerplate/internal/constanta"
 	"regexp"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 var Validate *validator.Validate
@@ -66,10 +67,31 @@ func ValidateLoginInput(input string) error {
 }
 
 // ValidatePassword memvalidasi password sesuai kriteria
-func ValidatePassword(password string) error {
-	passwordRegex := regexp.MustCompile(constanta.PasswordRegex)
-	if !passwordRegex.MatchString(password) {
-		return errors.New("password must be 8-20 characters long, with at least one uppercase letter, one lowercase letter, one digit, and one special character")
+func ValidatePassword(password string) bool {
+	// Cek panjang password (minimal 8, maksimal 20)
+	if len(password) < 8 || len(password) > 20 {
+		return false
 	}
-	return nil
+
+	// Cek minimal satu huruf kecil
+	lowercase := regexp.MustCompile(`[a-z]`)
+	if !lowercase.MatchString(password) {
+		return false
+	}
+
+	// Cek minimal satu huruf besar
+	uppercase := regexp.MustCompile(`[A-Z]`)
+	if !uppercase.MatchString(password) {
+		return false
+	}
+
+	// Cek minimal satu angka
+	number := regexp.MustCompile(`\d`)
+	if !number.MatchString(password) {
+		return false
+	}
+
+	// Cek minimal satu karakter spesial
+	specialChar := regexp.MustCompile(`[!@#$%^&*()_+\[\]{}|;:'",.<>?/\\]`)
+	return specialChar.MatchString(password)
 }

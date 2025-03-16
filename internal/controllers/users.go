@@ -64,6 +64,11 @@ func (ctrl *UserController) Login(c *fiber.Ctx) error {
 	return utils.SetResponseOK(c, "succes create token", response.ResAuth{Token: token})
 }
 
+func (ctrl *UserController) Logout(c *fiber.Ctx) error {
+	// TODO: implement logout
+	return utils.SetResponseOK(c, "success logout", nil)
+}
+
 func (ctrl *UserController) Profile(c *fiber.Ctx) error {
 	_, err := ctrl.UserUC.Profile(c.Context(), request.ReqUser{})
 	if err != nil {

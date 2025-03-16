@@ -12,6 +12,7 @@ type UserUseCase interface {
 	Register(ctx context.Context, reqUser *request.ReqUser) error
 	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
 	Profile(ctx context.Context, user request.ReqUser) (models.User, error)
+	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 }
 
 type userUseCase struct {
@@ -39,4 +40,11 @@ func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.U
 
 func (u *userUseCase) Profile(ctx context.Context, user request.ReqUser) (models.User, error) {
 	return models.User{}, nil
+}
+
+func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
+	//Mapping request user ke model user
+
+	user := models.User{}
+	return u.UserRepo.Create(ctx, &user)
 }

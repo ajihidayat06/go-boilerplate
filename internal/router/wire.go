@@ -5,7 +5,7 @@ import (
 	"go-boilerplate/internal/controllers/dashboard"
 	"go-boilerplate/internal/repo"
 	"go-boilerplate/internal/usecase"
-	dashboard2 "go-boilerplate/internal/usecase/dashboard"
+
 	"gorm.io/gorm"
 )
 
@@ -19,8 +19,16 @@ func InitUser(db *gorm.DB) *controllers.UserController {
 
 func InitAuth(db *gorm.DB) *dashboard.AuthController {
 	userRepo := repo.NewUserRepository(db)
-	authUC := dashboard2.NewAuthUseCase(db, userRepo)
+	authUC := usecase.NewAuthUseCase(db, userRepo)
 	authController := dashboard.NewAuthController(authUC)
 
 	return authController
+}
+
+func InitUserDahboard(db *gorm.DB) *dashboard.UserDahboardController {
+	userRepo := repo.NewUserRepository(db)
+	userDashboardUC := usecase.NewUserUseCase(db, userRepo)
+	userDashboardController := dashboard.NewUserDashboardController(userDashboardUC)
+
+	return userDashboardController
 }

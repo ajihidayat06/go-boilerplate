@@ -21,7 +21,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	api := app.Group("/api/dashboard")
 	// Public routes
 	api.Post("/login", auth.LoginDashboard)
-	api.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.AuthActionRead), auth.LogoutDashboard)
+	api.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), auth.LogoutDashboard)
 
 	UserRoutesDashboard(api, userDashboard)
 }

@@ -42,7 +42,14 @@ func (ctrl *UserDahboardController) CreateUserDashboard(c *fiber.Ctx) error {
 	return utils.SetResponseOK(c, "success register user", nil)
 }
 
-func (ctrl *UserDahboardController) GetUserDashboard(c *fiber.Ctx) error {
+func (ctrl *UserDahboardController) GetUserByID(c *fiber.Ctx) error {
+	id, err := utils.ReadRequestParamID(c)
+	if err != nil {
+		logger.Error("Failed get param id", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	ctrl.UserDashboardUsecase.GetUserByID(c.Context(), id)
 
 	return utils.SetResponseOK(c, "success get user", nil)
 }

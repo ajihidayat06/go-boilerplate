@@ -11,7 +11,7 @@ import (
 type UserUseCase interface {
 	Register(ctx context.Context, reqUser *request.ReqUser) error
 	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
-	Profile(ctx context.Context, user request.ReqUser) (models.User, error)
+	GetUserByID(ctx context.Context, user int64) (models.User, error)
 	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 }
 
@@ -38,7 +38,7 @@ func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.U
 	return user, nil
 }
 
-func (u *userUseCase) Profile(ctx context.Context, user request.ReqUser) (models.User, error) {
+func (u *userUseCase) GetUserByID(ctx context.Context, user int64) (models.User, error) {
 	return models.User{}, nil
 }
 

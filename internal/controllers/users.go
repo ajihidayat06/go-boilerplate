@@ -69,8 +69,8 @@ func (ctrl *UserController) Logout(c *fiber.Ctx) error {
 	return utils.SetResponseOK(c, "success logout", nil)
 }
 
-func (ctrl *UserController) Profile(c *fiber.Ctx) error {
-	_, err := ctrl.UserUC.Profile(c.Context(), request.ReqUser{})
+func (ctrl *UserController) GetProfile(c *fiber.Ctx) error {
+	_, err := ctrl.UserUC.GetUserByID(c.Context(), 1)
 	if err != nil {
 		logger.Error("Failed to retrieve user database", err)
 		return utils.SetResponseInternalServerError(c, "User ID not found", err)

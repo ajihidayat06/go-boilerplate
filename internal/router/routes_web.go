@@ -7,6 +7,6 @@ import (
 
 func UserRoutesWeb(api fiber.Router, handler *controllers.UserController) {
 	userRoute := api.Group("/user")
-	
-	userRoute.Get("/profile", handler.Profile)
+
+	userRoute.Get("/:id", handler.GetProfile)
 }

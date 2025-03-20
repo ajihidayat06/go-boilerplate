@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id int64) (models.User, error)
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
 	UpdateUserByID(ctx context.Context, reqData request.ReqUserUpdate, user models.User) (models.User, error)
-	DeleteUserByID(ctx context.Context, id int64) error
+	DeleteUserByID(ctx context.Context, id int64, updatedAt time.Time) error
 }
 
 type userRepository struct {
@@ -89,10 +90,10 @@ func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.Req
 }
 
 // DeleteUserByID implements UserRepository.
-func (r *userRepository) DeleteUserByID(ctx context.Context, id int64) error {
+func (r *userRepository) DeleteUserByID(ctx context.Context, id int64, updatedAt time.Time) error {
 	err := r.db.WithContext(ctx).
 	Scopes(r.withCheckScope(ctx)).
-	Where("id = ?", id).
+	Where("id = ? AND updated_at = ?", id, updatedAt).
 	Delete(&models.User{}).Error
 	if err != nil {
 		return err

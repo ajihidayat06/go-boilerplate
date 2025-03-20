@@ -14,5 +14,15 @@ func UserRoutesDashboard(api fiber.Router, handler *dashboard.UserDahboardContro
 	userDashboard.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), handler.GetListUser)
 	userDashboard.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), handler.GetUserByID)
 	userDashboard.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionWrite), handler.UpdateUserByID)
-	userDashboard.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionWrite), handler.CreateUserDashboard) //TODO: diganti jadi delete user by ID
+	userDashboard.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionWrite), handler.DeleteUserByID)
+}
+
+func CategoryRoutesdashboard(api fiber.Router, handler *dashboard.CategoryDashboardController) {
+    // Protected routes
+    category := api.Group("/category")
+    category.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.CreateCategory)
+    category.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetListCategory)
+    category.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetCategoryByID)
+    category.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.UpdateCategoryByID)
+    category.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.DeleteCategoryByID)
 }

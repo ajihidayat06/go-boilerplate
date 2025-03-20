@@ -17,7 +17,7 @@ type UserUseCase interface {
 	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
 	UpdateUserByID(ctx context.Context, user *request.ReqUserUpdate) (models.User, error)
-	DeleteUserByID(ctx context.Context, id int64) error
+	DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error
 }
 
 type userUseCase struct {
@@ -68,8 +68,13 @@ func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUs
 	return u.UserRepo.UpdateUserByID(ctx, *reqData, models.User{})
 }
 
-func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64) error {
-	err := u.UserRepo.DeleteUserByID(ctx, id)
+func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error {
+	err := reqData.ValidateUpdatedAt()
+	if err != nil {
+		return err
+	}
+
+	err = u.UserRepo.DeleteUserByID(ctx, id, reqData.UpdatedAt)
 	if err != nil {
 		logger.Error("Failed to delete user", err)
 		return err

@@ -106,7 +106,13 @@ func (ctrl *UserDahboardController) DeleteUserByID(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	err = ctrl.UserDashboardUsecase.DeleteUserByID(c.Context(), id)
+	reqData := request.AbstractRequest{}
+	if err := c.BodyParser(&reqData); err != nil {
+		logger.Error("Failed to parse request body", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	err = ctrl.UserDashboardUsecase.DeleteUserByID(c.Context(), id, reqData)
 	if err != nil {
 		logger.Error("Failed delete user", err)
 		return utils.SetResponseBadRequest(c, "Failed delete user", err)

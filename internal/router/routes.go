@@ -16,14 +16,16 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 
 func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	auth := InitAuth(db)
-	userDashboard := InitUserDahboard(db)
+	user := InitUserDahboard(db)
+	category := InitCategoryDashboard(db)
 
 	api := app.Group("/api/dashboard")
 	// Public routes
 	api.Post("/login", auth.LoginDashboard)
 	api.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), auth.LogoutDashboard)
 
-	UserRoutesDashboard(api, userDashboard)
+	UserRoutesDashboard(api, user)
+	CategoryRoutesdashboard(api, category)
 }
 
 func WebRoute(app *fiber.App, db *gorm.DB) {

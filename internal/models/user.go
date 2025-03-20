@@ -26,3 +26,7 @@ type UserLogin struct {
 	RoleName    string `json:"role_name"`
 	Permissions []Permissions
 }
+
+func (UserLogin) Tablename() string {
+	return "users"
+}

@@ -5,6 +5,8 @@ import (
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
+	"go-boilerplate/pkg/logger"
+
 	"gorm.io/gorm"
 )
 
@@ -14,7 +16,8 @@ type UserUseCase interface {
 	GetUserByID(ctx context.Context, user int64) (models.User, error)
 	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
-	UpdateUserByID(ctx context.Context, id int64) (models.User, error)
+	UpdateUserByID(ctx context.Context, user *request.ReqUserUpdate) (models.User, error)
+	DeleteUserByID(ctx context.Context, id int64) error
 }
 
 type userUseCase struct {
@@ -35,7 +38,7 @@ func (u *userUseCase) Register(ctx context.Context, reqUser *request.ReqUser) er
 }
 
 func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
-	// get user by (username or email) and password
+	// TODO: get user by (username or email) and password
 	user := models.UserLogin{}
 	return user, nil
 }
@@ -45,7 +48,7 @@ func (u *userUseCase) GetUserByID(ctx context.Context, id int64) (models.User, e
 }
 
 func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
-	//Mapping request user ke model user
+	//TODO: Mapping request user ke model user
 
 	user := models.User{}
 	return u.UserRepo.Create(ctx, &user)
@@ -55,6 +58,22 @@ func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetLis
 	return u.UserRepo.GetListUser(ctx, listStruct)
 }
 
-func (u *userUseCase) UpdateUserByID(ctx context.Context, id int64) (models.User, error) {
-	return u.UserRepo.UpdateUserByID(ctx, id)
+func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUserUpdate) (models.User, error) {
+	err := reqData.ValidateRequestUpdate()
+	if err != nil {
+		return models.User{}, err
+	}
+
+	// TODO: Mapping request user ke model user
+	return u.UserRepo.UpdateUserByID(ctx, *reqData, models.User{})
+}
+
+func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64) error {
+	err := u.UserRepo.DeleteUserByID(ctx, id)
+	if err != nil {
+		logger.Error("Failed to delete user", err)
+		return err
+	}
+
+	return nil
 }

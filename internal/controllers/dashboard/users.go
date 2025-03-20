@@ -49,16 +49,24 @@ func (ctrl *UserDahboardController) GetUserByID(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	ctrl.UserDashboardUsecase.GetUserByID(c.Context(), id)
+	response, err := ctrl.UserDashboardUsecase.GetUserByID(c.Context(), id)
+	if err != nil {
+		logger.Error("Failed get user", err)
+		return utils.SetResponseBadRequest(c, "Failed get user", err)
+	}
 
-	return utils.SetResponseOK(c, "success get user", nil)
+	return utils.SetResponseOK(c, "success get user", response)
 }
 
 func (ctrl *UserDahboardController) GetListUser(c *fiber.Ctx) error {
 
-	ctrl.UserDashboardUsecase.GetListUser(c.Context(), utils.GetFiltersAndPagination(c))
+	response, err := ctrl.UserDashboardUsecase.GetListUser(c.Context(), utils.GetFiltersAndPagination(c))
+	if err != nil {
+		logger.Error("Failed get list user", err)
+		return utils.SetResponseBadRequest(c, "Failed get list user", err)
+	}
 
-	return utils.SetResponseOK(c, "success get list user", nil)
+	return utils.SetResponseOK(c, "success get list user", response)
 }
 
 func (ctrl *UserDahboardController) UpdateUserByID(c *fiber.Ctx) error {
@@ -68,7 +76,41 @@ func (ctrl *UserDahboardController) UpdateUserByID(c *fiber.Ctx) error {
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	ctrl.UserDashboardUsecase.UpdateUserByID(c.Context(), id)
+	reqUpdate := request.ReqUserUpdate{}
+	reqUpdate.ID = id
+	if err := c.BodyParser(&reqUpdate); err != nil {
+		logger.Error("Failed to parse request body", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
 
-	return utils.SetResponseOK(c, "success get user", nil)
+	ok, errMsg := utils.ValidateRequest(reqUpdate, request.ReqUserUpdateErrorMessage)
+	if !ok {
+		err := fmt.Errorf("%s", errMsg)
+		logger.Error("error validate request ", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	response, err := ctrl.UserDashboardUsecase.UpdateUserByID(c.Context(), &reqUpdate)
+	if err != nil {
+		logger.Error("Failed update user", err)
+		return utils.SetResponseBadRequest(c, "Failed update user", err)
+	}
+
+	return utils.SetResponseOK(c, "success update user", response)
+}
+
+func (ctrl *UserDahboardController) DeleteUserByID(c *fiber.Ctx) error {
+	id, err := utils.ReadRequestParamID(c)
+	if err != nil {
+		logger.Error("Failed get param id", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	err = ctrl.UserDashboardUsecase.DeleteUserByID(c.Context(), id)
+	if err != nil {
+		logger.Error("Failed delete user", err)
+		return utils.SetResponseBadRequest(c, "Failed delete user", err)
+	}
+
+	return utils.SetResponseOK(c, "success delete user", nil)
 }

@@ -2,7 +2,9 @@ package repo
 
 import (
 	"context"
+	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
+
 	"gorm.io/gorm"
 )
 
@@ -11,7 +13,8 @@ type UserRepository interface {
 	Login(ctx context.Context, emailOrUsername, password string) (*models.User, error)
 	GetUserByID(ctx context.Context, id int64) (models.User, error)
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
-	UpdateUserByID(ctx context.Context, id int64) (models.User, error)
+	UpdateUserByID(ctx context.Context, reqData request.ReqUserUpdate, user models.User) (models.User, error)
+	DeleteUserByID(ctx context.Context, id int64) error
 }
 
 type userRepository struct {
@@ -72,17 +75,28 @@ func (r *userRepository) GetListUser(ctx context.Context, listStruct *models.Get
 	return users, nil
 }
 
-func (r *userRepository) UpdateUserByID(ctx context.Context, id int64) (models.User, error) {
-	var user models.User
-
+func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.ReqUserUpdate, user models.User) (models.User, error) {
 	err := r.db.WithContext(ctx).
 		Scopes(r.withCheckScope(ctx)).
 		Model(user).
-		Where("id = ? AND updated_at = ?", user.ID, user.UpdatedAt).
+		Where("id = ? AND updated_at = ?", reqData.ID, reqData.UpdatedAt).
 		Updates(user).Error
 	if err != nil {
 		return models.User{}, err
 	}
 
 	return user, nil
+}
+
+// DeleteUserByID implements UserRepository.
+func (r *userRepository) DeleteUserByID(ctx context.Context, id int64) error {
+	err := r.db.WithContext(ctx).
+	Scopes(r.withCheckScope(ctx)).
+	Where("id = ?", id).
+	Delete(&models.User{}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

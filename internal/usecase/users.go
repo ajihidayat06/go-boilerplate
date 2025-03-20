@@ -56,5 +56,5 @@ func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetLis
 }
 
 func (u *userUseCase) UpdateUserByID(ctx context.Context, id int64) (models.User, error) {
-
+	return u.UserRepo.UpdateUserByID(ctx, id)
 }

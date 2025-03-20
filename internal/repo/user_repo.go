@@ -11,6 +11,7 @@ type UserRepository interface {
 	Login(ctx context.Context, emailOrUsername, password string) (*models.User, error)
 	GetUserByID(ctx context.Context, id int64) (models.User, error)
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
+	UpdateUserByID(ctx context.Context, id int64) (models.User, error)
 }
 
 type userRepository struct {
@@ -69,4 +70,19 @@ func (r *userRepository) GetListUser(ctx context.Context, listStruct *models.Get
 	}
 
 	return users, nil
+}
+
+func (r *userRepository) UpdateUserByID(ctx context.Context, id int64) (models.User, error) {
+	var user models.User
+
+	err := r.db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
+		Model(user).
+		Where("id = ? AND updated_at = ?", user.ID, user.UpdatedAt).
+		Updates(user).Error
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }

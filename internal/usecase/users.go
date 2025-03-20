@@ -13,6 +13,8 @@ type UserUseCase interface {
 	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
 	GetUserByID(ctx context.Context, user int64) (models.User, error)
 	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
+	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
+	UpdateUserByID(ctx context.Context, id int64) (models.User, error)
 }
 
 type userUseCase struct {
@@ -38,8 +40,8 @@ func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.U
 	return user, nil
 }
 
-func (u *userUseCase) GetUserByID(ctx context.Context, user int64) (models.User, error) {
-	return models.User{}, nil
+func (u *userUseCase) GetUserByID(ctx context.Context, id int64) (models.User, error) {
+	return u.UserRepo.GetUserByID(ctx, id)
 }
 
 func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
@@ -47,4 +49,12 @@ func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.
 
 	user := models.User{}
 	return u.UserRepo.Create(ctx, &user)
+}
+
+func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error) {
+	return u.UserRepo.GetListUser(ctx, listStruct)
+}
+
+func (u *userUseCase) UpdateUserByID(ctx context.Context, id int64) (models.User, error) {
+
 }

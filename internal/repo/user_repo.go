@@ -9,6 +9,8 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
 	Login(ctx context.Context, emailOrUsername, password string) (*models.User, error)
+	GetUserByID(ctx context.Context, id int64) (models.User, error)
+	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
 }
 
 type userRepository struct {
@@ -40,4 +42,31 @@ func (r *userRepository) Login(ctx context.Context, emailOrUsername, password st
 	}
 
 	return &user, nil
+}
+
+func (r *userRepository) GetUserByID(ctx context.Context, id int64) (models.User, error) {
+	var user models.User
+
+	err := r.db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
+		Where(" id = ? ", id).
+		First(&user).Error
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (r *userRepository) GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error) {
+	var users []models.User
+
+	err := r.db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx), r.applyFiltersAndPaginationAndOrder(listStruct)).
+		Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

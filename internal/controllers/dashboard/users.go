@@ -53,3 +53,22 @@ func (ctrl *UserDahboardController) GetUserByID(c *fiber.Ctx) error {
 
 	return utils.SetResponseOK(c, "success get user", nil)
 }
+
+func (ctrl *UserDahboardController) GetListUser(c *fiber.Ctx) error {
+
+	ctrl.UserDashboardUsecase.GetListUser(c.Context(), utils.GetFiltersAndPagination(c))
+
+	return utils.SetResponseOK(c, "success get list user", nil)
+}
+
+func (ctrl *UserDahboardController) UpdateUserByID(c *fiber.Ctx) error {
+	id, err := utils.ReadRequestParamID(c)
+	if err != nil {
+		logger.Error("Failed get param id", err)
+		return utils.SetResponseBadRequest(c, "Invalid request", err)
+	}
+
+	ctrl.UserDashboardUsecase.UpdateUserByID(c.Context(), id)
+
+	return utils.SetResponseOK(c, "success get user", nil)
+}

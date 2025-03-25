@@ -1,8 +1,9 @@
 package constanta
 
 const (
-	MenuGroupUser = "user"
+	MenuGroupUser     = "user"
 	MenuGroupCategory = "category"
+	MenuGroupRole     = "role"
 )
 
 const (
@@ -11,4 +12,7 @@ const (
 
 	MenuCategoryActionWrite = MenuGroupCategory + ":" + AuthActionWrite
 	MenuCategoryActionRead  = MenuGroupCategory + ":" + AuthActionRead
+
+	MenuRoleActionWrite = MenuGroupRole + ":" + AuthActionWrite
+	MenuRoleActionRead  = MenuGroupRole + ":" + AuthActionRead
 )

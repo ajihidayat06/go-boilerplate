@@ -40,3 +40,11 @@ func InitCategoryDashboard(db *gorm.DB) *dashboard.CategoryDashboardController {
 
     return categoryController
 }
+
+func InitRoleDashboard(db *gorm.DB) *dashboard.RoleController {
+	roleRepo := repo.NewRoleRepository(db)
+	roleUC := usecase.NewRoleUseCase(db, roleRepo)
+	roleController := dashboard.NewRoleController(roleUC)
+
+	return roleController
+}

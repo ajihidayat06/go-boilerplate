@@ -31,7 +31,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *models.User) error {
-	return r.db.Create(user).Error
+	return r.getDB(ctx).Create(user).Error
 }
 
 func (r *userRepository) Login(ctx context.Context, emailOrUsername, password string) (*models.User, error) {
@@ -77,7 +77,9 @@ func (r *userRepository) GetListUser(ctx context.Context, listStruct *models.Get
 }
 
 func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.ReqUserUpdate, user models.User) (models.User, error) {
-	err := r.db.WithContext(ctx).
+	db := r.getDB(ctx)
+
+	err := db.WithContext(ctx).
 		Scopes(r.withCheckScope(ctx)).
 		Model(user).
 		Where("id = ? AND updated_at = ?", reqData.ID, reqData.UpdatedAt).
@@ -91,7 +93,9 @@ func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.Req
 
 // DeleteUserByID implements UserRepository.
 func (r *userRepository) DeleteUserByID(ctx context.Context, id int64, updatedAt time.Time) error {
-	err := r.db.WithContext(ctx).
+	db := r.getDB(ctx)
+
+	err := db.WithContext(ctx).
 	Scopes(r.withCheckScope(ctx)).
 	Where("id = ? AND updated_at = ?", id, updatedAt).
 	Delete(&models.User{}).Error

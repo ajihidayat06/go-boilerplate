@@ -4,16 +4,20 @@ import (
 	"context"
 	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/models"
-	"gorm.io/gorm"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type AbstractRepo struct {
 	db *gorm.DB
 }
 
-func (a *AbstractRepo) SetDb(tx *gorm.DB) {
-	a.db = tx
+func (a *AbstractRepo) getDB(ctx context.Context) *gorm.DB {
+    if tx, ok := ctx.Value(constanta.Tx).(*gorm.DB); ok {
+        return tx
+    }
+    return a.db
 }
 
 // Method untuk check scope (own atau all)

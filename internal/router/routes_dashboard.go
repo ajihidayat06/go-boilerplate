@@ -1,10 +1,11 @@
 package router
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/controllers/dashboard"
 	"go-boilerplate/internal/middleware"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func UserRoutesDashboard(api fiber.Router, handler *dashboard.UserDahboardController) {
@@ -18,11 +19,21 @@ func UserRoutesDashboard(api fiber.Router, handler *dashboard.UserDahboardContro
 }
 
 func CategoryRoutesdashboard(api fiber.Router, handler *dashboard.CategoryDashboardController) {
-    // Protected routes
-    category := api.Group("/category")
-    category.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.CreateCategory)
-    category.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetListCategory)
-    category.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetCategoryByID)
-    category.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.UpdateCategoryByID)
-    category.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.DeleteCategoryByID)
+	// Protected routes
+	category := api.Group("/category")
+	category.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.CreateCategory)
+	category.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetListCategory)
+	category.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionRead), handler.GetCategoryByID)
+	category.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.UpdateCategoryByID)
+	category.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuCategoryActionWrite), handler.DeleteCategoryByID)
+}
+
+func RoleRoutesDashboard(api fiber.Router, handler *dashboard.RoleController) {
+	// Protected routes
+	role := api.Group("/role")
+	role.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuRoleActionWrite), middleware.CheckAdminRoleMiddleware(), handler.CreateRole)
+	role.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuRoleActionRead), middleware.CheckAdminRoleMiddleware(), handler.GetListRole)
+	role.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRoleActionRead), middleware.CheckAdminRoleMiddleware(), handler.GetRoleByID)
+	role.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRoleActionWrite), middleware.CheckAdminRoleMiddleware(), handler.UpdateRoleByID)
+	role.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRoleActionWrite), middleware.CheckAdminRoleMiddleware(), handler.DeleteRoleByID)
 }

@@ -16,17 +16,19 @@ type CategoryRepository interface {
 }
 
 type categoryRepository struct {
-    db *gorm.DB
+    AbstractRepo
 }
 
 func NewCategoryRepository(db *gorm.DB) CategoryRepository {
     return &categoryRepository{
-        db: db,
+        AbstractRepo: AbstractRepo{
+            db: db,
+        },
     }
 }
 
 func (r *categoryRepository) Create(ctx context.Context, category *models.Category) error {
-    return r.db.WithContext(ctx).Create(category).Error
+    return r.getDB(ctx).WithContext(ctx).Create(category).Error
 }
 
 func (r *categoryRepository) GetCategoryByID(ctx context.Context, id int64) (models.Category, error) {
@@ -39,8 +41,10 @@ func (r *categoryRepository) GetCategoryByID(ctx context.Context, id int64) (mod
 }
 
 func (r *categoryRepository) GetListCategory(ctx context.Context) ([]models.Category, error) {
+    db := r.getDB(ctx)
+
     var categories []models.Category
-    err := r.db.WithContext(ctx).Find(&categories).Error
+    err := db.WithContext(ctx).Find(&categories).Error
     if err != nil {
         return nil, err
     }
@@ -48,7 +52,9 @@ func (r *categoryRepository) GetListCategory(ctx context.Context) ([]models.Cate
 }
 
 func (r *categoryRepository) UpdateCategoryByID(ctx context.Context, id int64, updatedAt time.Time, category models.Category) (models.Category, error) {
-    err := r.db.WithContext(ctx).
+    db := r.getDB(ctx)
+
+    err := db.WithContext(ctx).
         Model(&category).
         Where("id = ? AND updated_at = ?", id, updatedAt).
         Updates(category).Error
@@ -59,7 +65,9 @@ func (r *categoryRepository) UpdateCategoryByID(ctx context.Context, id int64, u
 }
 
 func (r *categoryRepository) DeleteCategoryByID(ctx context.Context, id int64, updatedAt time.Time) error {
-    err := r.db.WithContext(ctx).
+    db := r.getDB(ctx)
+
+    err := db.WithContext(ctx).
         Where("id = ? AND updated_at = ?", id, updatedAt).
         Delete(&models.Category{}).Error
     if err != nil {

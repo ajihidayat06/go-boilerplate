@@ -105,6 +105,17 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 	}
 }
 
+func CheckAdminRoleMiddleware() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        roleName := c.Locals(constanta.AuthRoleName)
+        if roleName == nil || (roleName != "admin" && roleName != "superadmin") {
+            logger.Error("User does not have admin role", nil)
+            return utils.SetResponseForbiden(c, errors.ErrMessageForbidden)
+        }
+        return c.Next()
+    }
+}
+
 func validateUserScopePermissionDashboard(userPermissions []models.Permissions, menuAction string) (bool, string) {
 	if len(userPermissions) == 0 {
 		return false, ""

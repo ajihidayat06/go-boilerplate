@@ -34,7 +34,14 @@ func NewUserUseCase(db *gorm.DB, userRepo repo.UserRepository) UserUseCase {
 
 func (u *userUseCase) Register(ctx context.Context, reqUser *request.ReqUser) error {
 	user := models.User{}
-	return u.UserRepo.Create(ctx, &user)
+	return processWithTx(ctx,  u.db, func(ctx context.Context) error {
+        err := u.UserRepo.Create(ctx, &user)
+        if err != nil {
+			logger.Error("Failed to create user", err)
+            return err
+        }
+        return nil
+    })
 }
 
 func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
@@ -51,7 +58,14 @@ func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.
 	//TODO: Mapping request user ke model user
 
 	user := models.User{}
-	return u.UserRepo.Create(ctx, &user)
+	return processWithTx(ctx,  u.db, func(ctx context.Context) error {
+        err := u.UserRepo.Create(ctx, &user)
+        if err != nil {
+			logger.Error("Failed to create user", err)
+            return err
+        }
+        return nil
+    })
 }
 
 func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error) {
@@ -65,7 +79,23 @@ func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUs
 	}
 
 	// TODO: Mapping request user ke model user
-	return u.UserRepo.UpdateUserByID(ctx, *reqData, models.User{})
+	var (
+        res models.User
+    )
+    err = processWithTx(ctx, u.db, func(ctx context.Context) error {
+        res, err = u.UserRepo.UpdateUserByID(ctx, *reqData, models.User{})
+        if err != nil {
+			logger.Error("Failed to update user", err)
+			return err
+		}
+
+        return nil
+    })
+    if err != nil {
+        return models.User{}, err   
+    }
+
+    return res, nil
 }
 
 func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error {
@@ -74,11 +104,12 @@ func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData requ
 		return err
 	}
 
-	err = u.UserRepo.DeleteUserByID(ctx, id, reqData.UpdatedAt)
-	if err != nil {
-		logger.Error("Failed to delete user", err)
-		return err
-	}
-
-	return nil
+	return processWithTx(ctx,  u.db, func(ctx context.Context) error {
+        err := u.UserRepo.DeleteUserByID(ctx, id, reqData.UpdatedAt)
+        if err != nil {
+			logger.Error("Failed to delete user", err)
+            return err
+        }
+        return nil
+    })
 }

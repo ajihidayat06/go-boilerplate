@@ -1,32 +1,39 @@
 package usecase
 
 import (
+	"context"
+	"go-boilerplate/internal/constanta"
+
 	"gorm.io/gorm"
 )
 
-func processWithTx(db *gorm.DB, fn func(tx *gorm.DB) error) error {
-	tx := db.Begin()
-	if tx.Error != nil {
-		return tx.Error
-	}
+func processWithTx(ctx context.Context, db *gorm.DB, fn func(ctx context.Context) error) error {
+    tx := db.Begin()
+    if tx.Error != nil {
+        return tx.Error
+    }
 
-	// Jika terjadi panic, rollback transaksi dan lanjutkan panic.
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			panic(r)
-		}
-	}()
+    // Menyimpan database awal
+    originalDB := db
 
-	err := fn(tx)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
+    // Membuat context baru dengan transaksi
+    ctx = context.WithValue(ctx, constanta.Tx, tx)
 
-	if commitErr := tx.Commit().Error; commitErr != nil {
-		return commitErr
-	}
+    defer func() {
+        if r := recover(); r != nil {
+            tx.Rollback()
+            panic(r)
+        }
 
-	return nil
+        // Reset repository ke database utama
+        ctx = context.WithValue(ctx, constanta.Tx, originalDB)
+    }()
+
+    if err := fn(ctx); err != nil {
+        tx.Rollback()
+        return err
+    }
+
+    return tx.Commit().Error
 }
+

@@ -4,6 +4,7 @@ const (
 	MenuGroupUser     = "user"
 	MenuGroupCategory = "category"
 	MenuGroupRole     = "role"
+	MenuGroupPermissions    = "permissions"
 )
 
 const (
@@ -15,4 +16,7 @@ const (
 
 	MenuRoleActionWrite = MenuGroupRole + ":" + AuthActionWrite
 	MenuRoleActionRead  = MenuGroupRole + ":" + AuthActionRead
+
+	MenuPermissionsActionWrite = MenuGroupPermissions + ":" + AuthActionWrite
+	MenuPermissionsActionRead  = MenuGroupPermissions + ":" + AuthActionRead
 )

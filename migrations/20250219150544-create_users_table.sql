@@ -29,8 +29,8 @@
         id bigserial NOT NULL,
         code VARCHAR NOT NULL,
         name VARCHAR,
-        action VARCHAR,LL
         group_menu VARCHAR,
+        action VARCHAR,
         access_scope VARCHAR CHECK (access_scope IN ('own', 'all')) DEFAULT 'own',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         created_by INTEGER,

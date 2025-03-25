@@ -19,6 +19,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	user := InitUserDahboard(db)
 	category := InitCategoryDashboard(db)
 	role := InitRoleDashboard(db)
+	permissions := InitPermissionDashboard(db)
 
 	api := app.Group("/api/dashboard")
 	// Public routes
@@ -28,6 +29,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	UserRoutesDashboard(api, user)
 	CategoryRoutesdashboard(api, category)
 	RoleRoutesDashboard(api, role)
+	PermissionRoutesDashboard(api, permissions)
 }
 
 func WebRoute(app *fiber.App, db *gorm.DB) {

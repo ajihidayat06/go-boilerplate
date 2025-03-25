@@ -48,3 +48,11 @@ func InitRoleDashboard(db *gorm.DB) *dashboard.RoleController {
 
 	return roleController
 }
+
+func InitPermissionDashboard(db *gorm.DB) *dashboard.PermissionController {
+	permissionRepo := repo.NewPermissionsRepository(db)
+	permissionUC := usecase.NewPermissionUseCase(db, permissionRepo)
+	permissionController := dashboard.NewPermissionController(permissionUC)
+
+	return permissionController
+}

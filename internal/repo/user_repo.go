@@ -36,7 +36,7 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 
 func (r *userRepository) Login(ctx context.Context, emailOrUsername, password string) (*models.User, error) {
 	var user models.User
-	err := r.db.
+	err := r.db.WithContext(ctx).
 		Preload("Roles").
 		Preload("Roles.RolePermissions").
 		Preload("Roles.RolePermissions.Permission").

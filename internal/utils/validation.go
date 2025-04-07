@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var Validate *validator.Validate
@@ -94,4 +95,10 @@ func ValidatePassword(password string) bool {
 	// Cek minimal satu karakter spesial
 	specialChar := regexp.MustCompile(`[!@#$%^&*()_+\[\]{}|;:'",.<>?/\\]`)
 	return specialChar.MatchString(password)
+}
+
+
+func CheckPasswordHash(password, hash string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+    return err == nil
 }

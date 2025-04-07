@@ -21,12 +21,12 @@ func (User) Tablename() string {
 }
 
 type UserLogin struct {
-	ID          int64  `json:"id"`
-	RoleID      int64  `json:"role_id"`
-	RoleName    string `json:"role_name"`
-	Permissions []Permissions
+    ID          int64            `json:"id"`
+    RoleID      int64            `json:"role_id"`
+    RoleName    string           `json:"role_name"`
+    RolePermissions []RolePermissions `json:"permissions"` // Gunakan RolePermissions di sini
 }
 
-func (UserLogin) Tablename() string {
-	return "users"
+func (UserLogin) TableName() string {
+    return "users"
 }

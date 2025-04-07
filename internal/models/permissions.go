@@ -8,7 +8,6 @@ type Permissions struct {
 	Name        string    `json:"name"`
 	GroupMenu   string    `json:"group_menu"`
 	Action      string    `json:"action"`
-	AccessScope string    `json:"access_scope"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	CreatedBy   int64     `json:"created_by"`
@@ -18,11 +17,11 @@ type Permissions struct {
 func (Permissions) TableName() string {
 	return "permissions"
 }
-
 type RolePermissions struct {
 	ID            int64       `json:"id"`
 	RoleID        int64       `json:"role_id"`
 	PermissionsID int64       `json:"permissions_id"`
+	AccessScope   string      `json:"access_scope"`
 	CreatedAt     time.Time   `json:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at"`
 	CreatedBy     int64       `json:"created_by"`

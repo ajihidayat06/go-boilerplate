@@ -2,10 +2,12 @@ package utils
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v2"
 	"go-boilerplate/internal/models"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func ReadRequestParamID(c *fiber.Ctx) (int64, error) {
@@ -91,4 +93,9 @@ func GetFiltersAndPagination(c *fiber.Ctx) *models.GetListStruct {
 		Page:    page,
 		Limit:   limit,
 	}
+}
+
+func HashPassword(password string) (string, error) {
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    return string(bytes), err
 }

@@ -5,6 +5,8 @@ import (
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
+	"go-boilerplate/internal/utils"
+	"go-boilerplate/internal/utils/errors"
 
 	"gorm.io/gorm"
 )
@@ -28,66 +30,45 @@ func NewAuthUseCase(db *gorm.DB, userRepo repo.UserRepository) AuthUseCase {
 	}
 }
 
-func (u authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
-	// get user by (username or email) and password
-	var (
-		rolePermissions []models.RolePermissions
-	)
+func (u *authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
+    // Ambil user dari repository
+    user, err := u.UserRepo.Login(ctx, req.UsenameOrEmail, req.Password)
+    if err != nil {
+        return models.UserLogin{}, err
+    }
 
-	rolePermissions = append(rolePermissions, models.RolePermissions{
-		ID:            1,
-		RoleID:        1,
-		PermissionsID: 1,
-		Permissions: models.Permissions{
-			ID:        1,
-			Code:      "user_read",
-			Name:      "user read",
-			Action:    "read",
-			GroupMenu: "user",
-		},
-	})
+    // Validasi password
+    if !utils.CheckPasswordHash(req.Password, user.Password) {
+        return models.UserLogin{}, errors.ErrInvalidCredentials // Ensure the error is defined in the errors package
+    }
 
-	roles := models.Roles{
-		ID:              1,
-		Code:            "admin",
-		Name:            "admin",
-		RolePermissions: &rolePermissions,
-	}
+    // Mapping RolePermissions ke UserLogin
+    var rolePermissions []models.RolePermissions
+    for _, rp := range *user.Roles.RolePermissions {
+        rolePermissions = append(rolePermissions, models.RolePermissions{
+            ID:            rp.ID,
+            RoleID:        rp.RoleID,
+            PermissionsID: rp.PermissionsID,
+            AccessScope:   rp.AccessScope,
+            Permissions: models.Permissions{
+                ID:        rp.Permissions.ID,
+                Code:      rp.Permissions.Code,
+                Name:      rp.Permissions.Name,
+                Action:    rp.Permissions.Action,
+                GroupMenu: rp.Permissions.GroupMenu,
+            },
+        })
+    }
 
-	user := models.User{
-		ID:       1,
-		Username: "ajihidayat",
-		Password: "ajihdiayat6",
-		Email:    "ajihidayat@gmail.com",
-		RoleID:   1,
-		Roles:    &roles,
-	}
+    // Buat UserLogin
+    userLogin := models.UserLogin{
+        ID:          user.ID,
+        RoleID:      user.RoleID,
+        RoleName:    user.Roles.Name,
+        RolePermissions: rolePermissions,
+    }
 
-	//userData, err := u.UserRepo.LoginDashboard(ctx, req.UsenameOrEmail, req.Password)
-	//if err != nil {
-	//	return models.User{}, err
-	//}
-
-	//mapping response ke model user login
-	var resPesmissions []models.Permissions
-	for _, rp := range *user.Roles.RolePermissions {
-		resPesmissions = append(resPesmissions, models.Permissions{
-			ID:        rp.Permissions.ID,
-			Code:      rp.Permissions.Code,
-			Name:      rp.Permissions.Name,
-			Action:    rp.Permissions.Action,
-			GroupMenu: rp.Permissions.GroupMenu,
-		})
-	}
-
-	userLogin := models.UserLogin{
-		ID:          user.ID,
-		RoleID:      user.RoleID,
-		RoleName:    user.Roles.Name,
-		Permissions: resPesmissions,
-	}
-
-	return userLogin, nil
+    return userLogin, nil
 }
 
 // Login implements AuthUseCase.

@@ -9,3 +9,6 @@ var ReqLoginErrorMessage = map[string]string{
 	"usename_or_email": "invalid username or email",
 	"password":         "invalid password",
 }
+type ReqToken struct {
+    TemporaryToken string `json:"temporary_token" validate:"required"`
+}

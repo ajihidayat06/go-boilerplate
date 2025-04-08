@@ -35,8 +35,8 @@ func SetResponseInternalServerError(c *fiber.Ctx, message string, err error) err
 	return SetResponseAPI(c, http.StatusInternalServerError, message, err.Error(), nil)
 }
 
-func SetResponseUnauthorized(c *fiber.Ctx, message string) error {
-	return SetResponseAPI(c, http.StatusUnauthorized, message, "", nil)
+func SetResponseUnauthorized(c *fiber.Ctx, message string, err string) error {
+	return SetResponseAPI(c, http.StatusUnauthorized, message, err, nil)
 }
 
 func SetResponseForbiden(c *fiber.Ctx, message string) error {

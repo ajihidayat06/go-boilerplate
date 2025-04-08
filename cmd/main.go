@@ -6,6 +6,7 @@ import (
 	"go-boilerplate/internal/router"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
+	// "go-boilerplate/pkg/redis"
 	"log"
 	"os"
 
@@ -23,6 +24,11 @@ func main() {
 		ErrorHandler: middleware.ErrorHandler,
 	})
 	//config.RunMigrations()
+
+	// err := redis.InitRedis()
+    // if err != nil {
+    //     log.Fatalf("Failed to initialize Redis: %v", err)
+    // }
 
 	// Security middleware: Helmet untuk secure headers
 	app.Use(helmet.New())

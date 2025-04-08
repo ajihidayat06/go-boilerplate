@@ -99,3 +99,7 @@ func HashPassword(password string) (string, error) {
     bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
     return string(bytes), err
 }
+
+func ExtractBearerToken(authHeader string) string {
+    return strings.TrimPrefix(authHeader, "Bearer ")
+}

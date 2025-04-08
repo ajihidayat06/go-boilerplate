@@ -1,7 +1,6 @@
 package router
 
 import (
-	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,10 +21,10 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	permissions := InitPermissionDashboard(db)
 	rolePermissions := InitRolePermissionsDashboard(db)
 
-	api := app.Group("/api/dashboard")
+	api := app.Group("/api/v1/dashboard")
 	// Public routes
-	api.Post("/login", auth.LoginDashboard)
-	api.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), auth.LogoutDashboard)
+
+	AuthRoutes(app, auth)
 
 	UserRoutesDashboard(api, user)
 	CategoryRoutesdashboard(api, category)
@@ -37,7 +36,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 func WebRoute(app *fiber.App, db *gorm.DB) {
 	user := InitUser(db)
 
-	api := app.Group("/api")
+	api := app.Group("/api/v1")
 
 	api.Post("/login", user.Login)
 	api.Post("/register", user.Register)

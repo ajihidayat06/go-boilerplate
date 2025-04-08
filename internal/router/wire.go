@@ -34,11 +34,11 @@ func InitUserDahboard(db *gorm.DB) *dashboard.UserDahboardController {
 }
 
 func InitCategoryDashboard(db *gorm.DB) *dashboard.CategoryDashboardController {
-    categoryRepo := repo.NewCategoryRepository(db)
-    categoryUC := usecase.NewCategoryUseCase(categoryRepo)
-    categoryController := dashboard.NewCategoryController(categoryUC)
+	categoryRepo := repo.NewCategoryRepository(db)
+	categoryUC := usecase.NewCategoryUseCase(categoryRepo)
+	categoryController := dashboard.NewCategoryController(categoryUC)
 
-    return categoryController
+	return categoryController
 }
 
 func InitRoleDashboard(db *gorm.DB) *dashboard.RoleController {
@@ -55,4 +55,12 @@ func InitPermissionDashboard(db *gorm.DB) *dashboard.PermissionController {
 	permissionController := dashboard.NewPermissionController(permissionUC)
 
 	return permissionController
+}
+
+func InitRolePermissionsDashboard(db *gorm.DB) *dashboard.RolePermissionsController {
+	rolePermissionsRepo := repo.NewRolePermissionsRepository(db)
+	rolePermissionsUC := usecase.NewRolePermissionsUsecase(rolePermissionsRepo)
+	rolePermissionsController := dashboard.NewRolePermissionsController(rolePermissionsUC)
+
+	return rolePermissionsController
 }

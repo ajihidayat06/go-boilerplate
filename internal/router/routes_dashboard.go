@@ -47,3 +47,13 @@ func PermissionRoutesDashboard(api fiber.Router, handler *dashboard.PermissionCo
 	permission.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuPermissionsActionWrite), middleware.CheckAdminRoleMiddleware(), handler.UpdatePermissionByID)
 	permission.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuPermissionsActionWrite), middleware.CheckAdminRoleMiddleware(), handler.DeletePermissionByID)
 }
+
+func RolePermissionsRoutesDashboard(api fiber.Router, handler *dashboard.RolePermissionsController) {
+	// Protected routes
+	rolePermissions := api.Group("/role-permissions")
+	rolePermissions.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionWrite), middleware.CheckAdminRoleMiddleware(), handler.CreateRolePermission)
+	rolePermissions.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionRead), middleware.CheckAdminRoleMiddleware(), handler.GetListRolePermissions)
+	rolePermissions.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionRead), middleware.CheckAdminRoleMiddleware(), handler.GetRolePermissionByID)
+	rolePermissions.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionWrite), middleware.CheckAdminRoleMiddleware(), handler.UpdateRolePermissionByID)
+	rolePermissions.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionWrite), middleware.CheckAdminRoleMiddleware(), handler.DeleteRolePermissionByID)
+}

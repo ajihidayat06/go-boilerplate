@@ -1,10 +1,11 @@
 package constanta
 
 const (
-	MenuGroupUser     = "user"
-	MenuGroupCategory = "category"
-	MenuGroupRole     = "role"
-	MenuGroupPermissions    = "permissions"
+	MenuGroupUser            = "user"
+	MenuGroupCategory        = "category"
+	MenuGroupRole            = "role"
+	MenuGroupPermissions     = "permissions"
+	MenuGroupRolePermissions = "role_permissions"
 )
 
 const (
@@ -19,4 +20,7 @@ const (
 
 	MenuPermissionsActionWrite = MenuGroupPermissions + ":" + AuthActionWrite
 	MenuPermissionsActionRead  = MenuGroupPermissions + ":" + AuthActionRead
+
+	MenuRolePermissionsActionRead  = MenuGroupRolePermissions + ":" + AuthActionRead
+	MenuRolePermissionsActionWrite = MenuGroupRolePermissions + ":" + AuthActionWrite
 )

@@ -4,8 +4,10 @@ import (
 	"go-boilerplate/config"
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/router"
+	"go-boilerplate/internal/seeder"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
+
 	// "go-boilerplate/pkg/redis"
 	"log"
 	"os"
@@ -29,6 +31,10 @@ func main() {
     // if err != nil {
     //     log.Fatalf("Failed to initialize Redis: %v", err)
     // }
+
+	if err := seeder.SeedSuperAdmin(db); err != nil {
+        logger.Error("Failed to seed superadmin", err)
+    }
 
 	// Security middleware: Helmet untuk secure headers
 	app.Use(helmet.New())

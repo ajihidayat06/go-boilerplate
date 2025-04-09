@@ -1,26 +1,58 @@
 package config
 
 import (
+	"fmt"
+	"log"
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
-func LoadEnv() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+type Config struct {
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	RedisHost  string
+	RedisPort  string
+}
+
+func LoadConfig() Config {
+	requiredEnv := []string{"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "REDIS_HOST", "REDIS_PORT"}
+	for _, env := range requiredEnv {
+		if os.Getenv(env) == "" {
+			log.Fatalf("Environment variable %s is not set", env)
+		}
+	}
+
+	return Config{
+		DBHost:     os.Getenv("DB_HOST"),
+		DBPort:     os.Getenv("DB_PORT"),
+		DBUser:     os.Getenv("DB_USER"),
+		DBPassword: os.Getenv("DB_PASSWORD"),
+		DBName:     os.Getenv("DB_NAME"),
+		RedisHost:  os.Getenv("REDIS_HOST"),
+		RedisPort:  os.Getenv("REDIS_PORT"),
 	}
 }
 
-func InitDatabase() *gorm.DB {
-	//dsn := os.Getenv("DATABASE_URL")
-	//db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	//if err != nil {
-	//	log.Fatal("Failed to connect to database")
-	//}
-	return &gorm.DB{}
+func (c Config) GetDatabaseURL() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
+}
+
+func InitDatabase(config Config) *gorm.DB {
+	dsn := config.GetDatabaseURL()
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	return db
+	// return &gorm.DB{}
 }
 
 func CorsConfig() fiber.Handler {

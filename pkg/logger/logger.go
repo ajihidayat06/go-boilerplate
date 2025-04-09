@@ -1,15 +1,25 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
+	"os"
 	"runtime"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
 
 func InitLogger() {
-	log.SetFormatter(&logrus.JSONFormatter{})
+	if os.Getenv("ENV") == "production" {
+		log.SetFormatter(&logrus.JSONFormatter{})
+	} else {
+		log.SetFormatter(&logrus.TextFormatter{
+			FullTimestamp: true,
+			ForceColors:   true,
+			DisableQuote:  true,
+		})
+	}
 }
 
 func Info(message string, fields map[string]interface{}) {

@@ -1,13 +1,20 @@
 package router
 
 import (
+	"go-boilerplate/internal/controllers"
 	"go-boilerplate/internal/middleware"
+	"go-boilerplate/pkg/redis"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 func SetupRoutes(app *fiber.App, db *gorm.DB) {
+	app.Get("/health", controllers.HealthCheck(controllers.HealthDependencies{
+		DB:    db,
+		Redis: redis.RDB,
+	}))
+
 	DashboardRoute(app, db)
 
 	WebRoute(app, db)
@@ -25,7 +32,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	// Public routes
 
 	AuthRoutes(app, auth)
-	
+
 	RoleRoutesDashboard(api, role)
 	PermissionRoutesDashboard(api, permissions)
 	RolePermissionsRoutesDashboard(api, rolePermissions)

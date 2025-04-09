@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"go-boilerplate/config"
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/router"
+	"go-boilerplate/internal/seeder"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 	"go-boilerplate/pkg/redis"
 	"os/signal"
+	"syscall"
 
-	// "go-boilerplate/pkg/redis"
 	"log"
 	"os"
 
@@ -19,6 +21,9 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting application...")
+	fmt.Printf("DEBUG_MODE: %s\n", os.Getenv("DEBUG_MODE"))
+
 	logger.InitLogger()
 	logger.Info("Starting API server...", nil)
 
@@ -33,17 +38,17 @@ func main() {
 		ErrorHandler: middleware.ErrorHandler,
 	})
 
-	//config.RunMigrations()
+	config.RunMigrations()
 
 	err = redis.InitRedis()
 	if err != nil {
 		log.Fatalf("Failed to initialize Redis: %v", err)
 	}
 
-	// if err := seeder.SeedSuperAdmin(db); err != nil {
-	// 	logger.Error("Failed to seed superadmin", err)
-	// 	log.Fatalf("Failed to seed superadmin: %v", err)
-	// }
+	if err := seeder.SeedSuperAdmin(db); err != nil {
+		logger.Error("Failed to seed superadmin", err)
+		log.Fatalf("Failed to seed superadmin: %v", err)
+	}
 
 	// Security middleware: Helmet untuk secure headers
 	setupMiddlewares(app)
@@ -51,11 +56,18 @@ func main() {
 	utils.InitValidator()
 	router.SetupRoutes(app, db)
 
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error":   "Route not found",
+			"message": "The requested endpoint does not exist",
+		})
+	})
+
 	port := getPort()
 
 	// Graceful shutdown
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
 		<-c

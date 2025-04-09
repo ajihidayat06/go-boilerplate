@@ -3,11 +3,11 @@ package seeder
 import (
 	"errors"
 	"go-boilerplate/internal/models"
+	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 	"os"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -53,7 +53,7 @@ func SeedSuperAdmin(db *gorm.DB) error {
 	if err := db.Where("email = ?", superAdminEmail).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Hash password
-			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(superAdminPassword), bcrypt.DefaultCost)
+			hashedPassword, err := utils.HashPassword(superAdminPassword)
 			if err != nil {
 				logger.Error("Failed to hash password", err)
 				return err

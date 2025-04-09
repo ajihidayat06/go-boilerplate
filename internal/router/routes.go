@@ -31,7 +31,7 @@ func DashboardRoute(app *fiber.App, db *gorm.DB) {
 	api := app.Group("/api/v1/dashboard")
 	// Public routes
 
-	AuthRoutes(app, auth)
+	AuthRoutes(api, auth)
 
 	RoleRoutesDashboard(api, role)
 	PermissionRoutesDashboard(api, permissions)

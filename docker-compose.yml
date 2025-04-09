@@ -4,11 +4,14 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "8080:8080" # Application port
+      - "40000:40000" # Debugging port
     depends_on:
-      - db
-      - redis
-    environment: # Perbaikan indentasi dimulai di sini
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
       ENV: development
       PORT: 8080
       DB_HOST: db
@@ -18,10 +21,22 @@ services:
       DB_NAME: mydb
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: 
+      REDIS_PASSWORD: "" # Kosong jika tidak digunakan
       REDIS_DB: 0
       JWT_SECRET: pastirelease-ajiinovasiteknologi
       JWT_EXPIRE_HOURS: 24
+      DEBUG_MODE: ${DEBUG_MODE:-false} # Default ke "false" jika tidak ditentukan
+    volumes:
+      - ./migrations:/app/migrations
+    command: >
+      sh -c "
+      if [ \"$DEBUG_MODE\" = \"true\" ]; then
+        echo 'Running in debug mode...';
+        dlv exec ./main --headless --listen=:40000 --api-version=2 --accept-multiclient --log;
+      else
+        echo 'Running in normal mode...';
+        ./main;
+      fi"
 
   db:
     image: postgres:latest
@@ -34,12 +49,23 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
     restart: always
     ports:
       - "6379:6379"
+    command: ["redis-server"] # Hapus --requirepass jika tidak digunakan
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:

@@ -8,42 +8,42 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func AuthRoutes(app *fiber.App, authController *dashboard.AuthController) {
-// 	Langkah 1: Validasi Kredensial
-// Endpoint: POST /api/v1/auth/validate
-// Body:
-// {
-// 	"username_or_email": "user@example.com",
-// 	"password": "password123"
-// }
+func AuthRoutes(api fiber.Router, authController *dashboard.AuthController) {
+	// 	Langkah 1: Validasi Kredensial
+	// Endpoint: POST /api/v1/auth/validate
+	// Body:
+	// {
+	// 	"username_or_email": "user@example.com",
+	// 	"password": "password123"
+	// }
 
-// Respons:
-// {
-// 	"message": "Temporary token generated",
-// 	"data": {
-// 	  "temporary_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-// 	}
-//   }
+	// Respons:
+	// {
+	// 	"message": "Temporary token generated",
+	// 	"data": {
+	// 	  "temporary_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+	// 	}
+	//   }
 
-// Langkah 2: Permintaan Token Akses
-// Endpoint: POST /api/v1/auth/token
-// Body:
-// {
-// 	"temporary_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-// }
+	// Langkah 2: Permintaan Token Akses
+	// Endpoint: POST /api/v1/auth/token
+	// Body:
+	// {
+	// 	"temporary_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+	// }
 
-// Respons:
-// {
-// 	"message": "Access token generated",
-// 	"data": {
-// 	  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-// 	}
-//   }
+	// Respons:
+	// {
+	// 	"message": "Access token generated",
+	// 	"data": {
+	// 	  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+	// 	}
+	//   }
 
-    auth := app.Group("/auth")
+	auth := api.Group("/auth")
 
-    auth.Post("/validate", authController.ValidateCredentials) // Endpoint pertama
-    auth.Post("/token", authController.GenerateAccessToken)    // Endpoint kedua
+	auth.Post("/validate", authController.ValidateCredentials) // Endpoint pertama
+	auth.Post("/token", authController.GenerateAccessToken)    // Endpoint kedua
 
 	auth.Post("/logout", middleware.AuthMiddlewareDashboard(constanta.MenuUserActionRead), authController.LogoutDashboard)
 }

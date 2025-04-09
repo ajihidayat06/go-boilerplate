@@ -31,44 +31,44 @@ func NewAuthUseCase(db *gorm.DB, userRepo repo.UserRepository) AuthUseCase {
 }
 
 func (u *authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error) {
-    // Ambil user dari repository
-    user, err := u.UserRepo.Login(ctx, req.UsenameOrEmail, req.Password)
-    if err != nil {
-        return models.UserLogin{}, err
-    }
+	// Ambil user dari repository
+	user, err := u.UserRepo.Login(ctx, req.UsernameOrEmail, req.Password)
+	if err != nil {
+		return models.UserLogin{}, err
+	}
 
-    // Validasi password
-    if !utils.CheckPasswordHash(req.Password, user.Password) {
-        return models.UserLogin{}, errors.ErrInvalidCredentials // Ensure the error is defined in the errors package
-    }
+	// Validasi password
+	if !utils.CheckPasswordHash(req.Password, user.Password) {
+		return models.UserLogin{}, errors.ErrInvalidCredentials // Ensure the error is defined in the errors package
+	}
 
-    // Mapping RolePermissions ke UserLogin
-    var rolePermissions []models.RolePermissions
-    for _, rp := range *user.Roles.RolePermissions {
-        rolePermissions = append(rolePermissions, models.RolePermissions{
-            ID:            rp.ID,
-            RoleID:        rp.RoleID,
-            PermissionsID: rp.PermissionsID,
-            AccessScope:   rp.AccessScope,
-            Permissions: models.Permissions{
-                ID:        rp.Permissions.ID,
-                Code:      rp.Permissions.Code,
-                Name:      rp.Permissions.Name,
-                Action:    rp.Permissions.Action,
-                GroupMenu: rp.Permissions.GroupMenu,
-            },
-        })
-    }
+	// Mapping RolePermissions ke UserLogin
+	var rolePermissions []models.RolePermissions
+	for _, rp := range *user.Roles.RolePermissions {
+		rolePermissions = append(rolePermissions, models.RolePermissions{
+			ID:            rp.ID,
+			RoleID:        rp.RoleID,
+			PermissionsID: rp.PermissionsID,
+			AccessScope:   rp.AccessScope,
+			Permissions: &models.Permissions{
+				ID:        rp.Permissions.ID,
+				Code:      rp.Permissions.Code,
+				Name:      rp.Permissions.Name,
+				Action:    rp.Permissions.Action,
+				GroupMenu: rp.Permissions.GroupMenu,
+			},
+		})
+	}
 
-    // Buat UserLogin
-    userLogin := models.UserLogin{
-        ID:          user.ID,
-        RoleID:      user.RoleID,
-        RoleName:    user.Roles.Name,
-        RolePermissions: rolePermissions,
-    }
+	// Buat UserLogin
+	userLogin := models.UserLogin{
+		ID:              user.ID,
+		RoleID:          user.RoleID,
+		RoleName:        user.Roles.Name,
+		RolePermissions: rolePermissions,
+	}
 
-    return userLogin, nil
+	return userLogin, nil
 }
 
 // Login implements AuthUseCase.

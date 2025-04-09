@@ -36,10 +36,10 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 
 func (r *userRepository) Login(ctx context.Context, emailOrUsername, password string) (*models.User, error) {
 	var user models.User
-	err := r.db.WithContext(ctx).
+	err := r.getDB(ctx).Debug().
 		Preload("Roles").
 		Preload("Roles.RolePermissions").
-		Preload("Roles.RolePermissions.Permission").
+		Preload("Roles.RolePermissions.Permissions").
 		Where("(email = ? OR username = ?)", emailOrUsername, emailOrUsername).
 		First(&user).Error
 	if err != nil {
@@ -96,9 +96,9 @@ func (r *userRepository) DeleteUserByID(ctx context.Context, id int64, updatedAt
 	db := r.getDB(ctx)
 
 	err := db.WithContext(ctx).
-	Scopes(r.withCheckScope(ctx)).
-	Where("id = ? AND updated_at = ?", id, updatedAt).
-	Delete(&models.User{}).Error
+		Scopes(r.withCheckScope(ctx)).
+		Where("id = ? AND updated_at = ?", id, updatedAt).
+		Delete(&models.User{}).Error
 	if err != nil {
 		return err
 	}

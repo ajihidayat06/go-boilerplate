@@ -94,6 +94,14 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		}
 
 		// Konversi role_permissions ke []models.RolePermissions
+		c.Locals(constanta.AuthUserID, uint(claims["user_id"].(float64)))
+		c.Locals(constanta.AuthRoleID, uint(claims["role_id"].(float64)))
+		c.Locals(constanta.AuthRoleName, claims["role_name"].(string))
+		if claims["role_name"].(string) == "superadmin" || claims["role_name"].(string) == "admin" {
+			c.Locals(constanta.IsAdmin, true)
+			return c.Next()
+		}
+
 		permissionsData, ok := rawPermissions.([]interface{})
 		if !ok {
 			return utils.SetResponseForbiden(c, "Invalid permissions data")
@@ -103,7 +111,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		for _, item := range permissionsData {
 			if permMap, ok := item.(map[string]interface{}); ok {
 				rolePermission := models.RolePermissions{
-					Permissions: models.Permissions{
+					Permissions: &models.Permissions{
 						GroupMenu: permMap["group_menu"].(string),
 						Action:    permMap["action"].(string),
 					},
@@ -122,9 +130,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		}
 
 		// Simpan user_id dan scope ke context agar bisa digunakan di handler selanjutnya
-		c.Locals(constanta.AuthUserID, uint(claims["user_id"].(float64)))
-		c.Locals(constanta.AuthRoleID, uint(claims["role_id"].(float64)))
-		c.Locals(constanta.AuthRoleName, claims["role_name"].(string))
+		c.Locals(constanta.IsAdmin, false)
 		c.Locals(constanta.Scope, scope)
 		return c.Next()
 	}
@@ -256,10 +262,16 @@ func SaveTokenToRedis(ctx context.Context, token string, exp time.Time) error {
 
 func IsTokenInRedis(ctx context.Context, token string) (bool, error) {
 	result, err := redis.GetFromRedis(ctx, token)
-    if err != nil {
-        return false, err
-    }
-    return result == "true", nil
+	if err != nil {
+		return false, err
+	}
+
+	// Periksa apakah hasilnya valid ("true" atau "1")
+	if result == "true" || result == "1" {
+		return true, nil
+	}
+
+	return false, errors.New("token not found in Redis")
 }
 
 func DeleteTokenFromRedis(ctx context.Context, token string) error {

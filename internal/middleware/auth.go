@@ -31,6 +31,7 @@ func GenerateTokenUserDashboard(user models.UserLogin) (string, error) {
 		"user_id":          user.ID,
 		"role_id":          user.RoleID,
 		"role_name":        user.RoleName,
+		"role_code":        user.RoleCode,
 		"role_permissions": permissions,                           // Simpan permissions dalam bentuk slice dari map
 		"exp":              time.Now().Add(time.Hour * 24).Unix(), // Token berlaku 24 jam
 	}
@@ -87,19 +88,20 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 			return utils.SetResponseUnauthorized(c, errorutils.ErrMessageExpiredToken, "")
 		}
 
-		// Ambil role_permissions dari token
-		rawPermissions, exists := claims["role_permissions"]
-		if !exists {
-			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
-		}
-
 		// Konversi role_permissions ke []models.RolePermissions
 		c.Locals(constanta.AuthUserID, uint(claims["user_id"].(float64)))
 		c.Locals(constanta.AuthRoleID, uint(claims["role_id"].(float64)))
 		c.Locals(constanta.AuthRoleName, claims["role_name"].(string))
-		if claims["role_name"].(string) == "superadmin" || claims["role_name"].(string) == "admin" {
+		c.Locals(constanta.AuthRoleCode, claims["role_code"].(string))
+		if claims["role_code"].(string) == constanta.RoleCodeAdmin || claims["role_code"].(string) == constanta.RoleCodeSuperAdmin {
 			c.Locals(constanta.IsAdmin, true)
 			return c.Next()
+		}
+
+		// Ambil role_permissions dari token
+		rawPermissions, exists := claims["role_permissions"]
+		if !exists {
+			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
 
 		permissionsData, ok := rawPermissions.([]interface{})
@@ -139,7 +141,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 func CheckAdminRoleMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		roleName := c.Locals(constanta.AuthRoleName)
-		if roleName == nil || (roleName != "admin" && roleName != "superadmin") {
+		if roleName == nil || (roleName != constanta.RoleCodeAdmin && roleName != constanta.RoleCodeSuperAdmin) {
 			logger.Error("User does not have admin role", nil)
 			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
@@ -218,9 +220,10 @@ func AuthMiddleware() fiber.Handler {
 
 func GenerateTemporaryToken(user models.UserLogin) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": user.ID,
-		"role_id": user.RoleID,
-		"exp":     time.Now().Add(time.Minute * 5).Unix(), // Temporary token berlaku 5 menit
+		"user_id":   user.ID,
+		"role_id":   user.RoleID,
+		"role_code": user.RoleCode,
+		"exp":       time.Now().Add(time.Minute * 5).Unix(), // Temporary token berlaku 5 menit
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -248,8 +251,9 @@ func ValidateTemporaryToken(temporaryToken string) (models.UserLogin, error) {
 
 	// Ambil data user dari token
 	user := models.UserLogin{
-		ID:     int64(claims["user_id"].(float64)),
-		RoleID: int64(claims["role_id"].(float64)),
+		ID:       int64(claims["user_id"].(float64)),
+		RoleID:   int64(claims["role_id"].(float64)),
+		RoleCode: claims["role_code"].(string),
 	}
 
 	return user, nil

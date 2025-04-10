@@ -2,6 +2,7 @@ package seeder
 
 import (
 	"errors"
+	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
@@ -25,7 +26,7 @@ func SeedSuperAdmin(db *gorm.DB) error {
 			// Buat role superadmin
 			role = models.Roles{
 				Name: "superadmin",
-				Code: "super-admin",
+				Code: constanta.RoleCodeSuperAdmin,
 			}
 			if err := db.Create(&role).Error; err != nil {
 				logger.Error("Failed to create superadmin role", err)
@@ -39,13 +40,11 @@ func SeedSuperAdmin(db *gorm.DB) error {
 
 	// Ambil email dan password dari environment variables
 	superAdminEmail := os.Getenv("SUPERADMIN_EMAIL")
-	if superAdminEmail == "" {
-		superAdminEmail = "superadmin@example.com" // Default value
-	}
-
 	superAdminPassword := os.Getenv("SUPERADMIN_PASSWORD")
-	if superAdminPassword == "" {
-		superAdminPassword = "superadmin123" // Default value
+	if superAdminEmail == "" || superAdminPassword == "" {
+		err := errors.New("SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD environment variable is not set")
+		logger.Error("SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD environment variable is not set", err)
+		return err
 	}
 
 	// Periksa apakah user superadmin sudah ada
@@ -63,7 +62,7 @@ func SeedSuperAdmin(db *gorm.DB) error {
 			user = models.User{
 				Username:  "superadmin",
 				Email:     superAdminEmail,
-				Password:  string(hashedPassword),
+				Password:  hashedPassword,
 				RoleID:    role.ID,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),

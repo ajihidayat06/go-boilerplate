@@ -11,7 +11,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
-	Login(ctx context.Context, emailOrUsername, password string) (*models.User, error)
+	Login(ctx context.Context, emailOrUsername string, userID int64) (*models.User, error)
 	GetUserByID(ctx context.Context, id int64) (models.User, error)
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) ([]models.User, error)
 	UpdateUserByID(ctx context.Context, reqData request.ReqUserUpdate, user models.User) (models.User, error)
@@ -34,14 +34,19 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 	return r.getDB(ctx).Create(user).Error
 }
 
-func (r *userRepository) Login(ctx context.Context, emailOrUsername, password string) (*models.User, error) {
+func (r *userRepository) Login(ctx context.Context, emailOrUsername string, userID int64) (*models.User, error) {
 	var user models.User
-	err := r.getDB(ctx).Debug().
-		Preload("Roles").
+	db := r.getDB(ctx).Preload("Roles").
 		Preload("Roles.RolePermissions").
-		Preload("Roles.RolePermissions.Permissions").
-		Where("(email = ? OR username = ?)", emailOrUsername, emailOrUsername).
-		First(&user).Error
+		Preload("Roles.RolePermissions.Permissions")
+
+	if userID != 0 {
+		db.Where("id = ?", userID)
+	} else {
+		db.Where("(email = ? OR username = ?)", emailOrUsername, emailOrUsername)
+	}
+
+	err := db.First(&user).Error
 	if err != nil {
 		return nil, err
 	}

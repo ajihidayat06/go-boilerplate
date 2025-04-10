@@ -6,6 +6,7 @@ import (
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/usecase"
 	"go-boilerplate/internal/utils"
+	"go-boilerplate/internal/utils/errors"
 	"go-boilerplate/pkg/logger"
 	"time"
 
@@ -45,31 +46,44 @@ func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
 	var reqLogin request.ReqLogin
 	if err := c.BodyParser(&reqLogin); err != nil {
 		logger.Error("Failed to parse login request", err)
-		return utils.SetResponseBadRequest(c, "Invalid request", err)
+		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
+	}
+
+	err := reqLogin.ValidateRequest()
+	if err != nil {
+		return utils.SetResponseBadRequest(c, "Invalid username or password", err)
 	}
 
 	// Validasi kredensial
 	user, err := ctrl.AuthUsecase.LoginDashboard(c.Context(), &reqLogin)
 	if err != nil {
-		logger.Error("Login failed", err)
-		return utils.SetResponseBadRequest(c, "Invalid username or password", err)
+		logger.Error("error LoginDashboard", err)
+		return utils.SetResponseBadRequest(c, "Login Failed, Invalid username or password", err)
 	}
 
 	// Generate temporary token
 	temporaryToken, err := middleware.GenerateTemporaryToken(user)
 	if err != nil {
 		logger.Error("Failed to generate temporary token", err)
-		return utils.SetResponseInternalServerError(c, "Failed to generate temporary token", err)
+		return utils.SetResponseInternalServerError(c, "Failed generate token", err)
 	}
 
 	return utils.SetResponseOK(c, "Temporary token generated", response.ResAuth{Token: temporaryToken})
 }
 
 func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
-	var reqToken request.ReqToken
-	if err := c.BodyParser(&reqToken); err != nil {
+	var (
+		reqToken request.ReqToken
+		err      error
+	)
+	if err = c.BodyParser(&reqToken); err != nil {
 		logger.Error("Failed to parse token request", err)
-		return utils.SetResponseBadRequest(c, "Invalid request", err)
+		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
+	}
+
+	err = reqToken.ValidateRequest()
+	if err != nil {
+		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
 	}
 
 	// Validasi temporary token
@@ -80,6 +94,12 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	}
 
 	// Generate access token
+	user, err = ctrl.AuthUsecase.LoginByUserId(c.Context(), user.ID)
+	if err != nil {
+		logger.Error("Error GetUserByID", err)
+		return utils.SetResponseUnauthorized(c, errors.ErrMessageDataNotFound, err.Error())
+	}
+
 	accessToken, err := middleware.GenerateTokenUserDashboard(user)
 	if err != nil {
 		logger.Error("Failed to generate access token", err)

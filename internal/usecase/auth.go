@@ -6,7 +6,7 @@ import (
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
 	"go-boilerplate/internal/utils"
-	"go-boilerplate/internal/utils/errors"
+	"go-boilerplate/internal/utils/errorutils"
 
 	"gorm.io/gorm"
 )
@@ -40,7 +40,7 @@ func (u *authUseCase) LoginDashboard(ctx context.Context, req *request.ReqLogin)
 
 	// Validasi password
 	if !utils.CheckPasswordHash(req.Password, user.Password) {
-		return models.UserLogin{}, errors.ErrInvalidCredentials // Ensure the error is defined in the errors package
+		return models.UserLogin{}, errorutils.ErrInvalidCredentials // Ensure the error is defined in the errors package
 	}
 
 	// Mapping RolePermissions ke UserLogin
@@ -93,7 +93,7 @@ func (u *authUseCase) LoginByUserId(ctx context.Context, userID int64) (models.U
 	user, err := u.UserRepo.Login(ctx, "", userID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return models.UserLogin{}, errors.ErrDataNotFound // Pastikan error ini didefinisikan di package errors
+			return models.UserLogin{}, errorutils.ErrDataNotFound // Pastikan error ini didefinisikan di package errors
 		}
 		return models.UserLogin{}, err
 	}

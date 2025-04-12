@@ -88,18 +88,24 @@ func GetFiltersAndPagination(c *fiber.Ctx) *models.GetListStruct {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
+	// Ambil orderBy dan sortBy
+	orderBy := c.Query("orderBy", "id") // Default orderBy adalah "id"
+	sortBy := c.Query("sortBy", "desc") // Default sortBy adalah "asc"
+
 	return &models.GetListStruct{
 		Filters: filters,
 		Page:    page,
 		Limit:   limit,
+		OrderBy: orderBy,
+		SortBy:  sortBy,
 	}
 }
 
 func HashPassword(password string) (string, error) {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-    return string(bytes), err
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
 
 func ExtractBearerToken(authHeader string) string {
-    return strings.TrimPrefix(authHeader, "Bearer ")
+	return strings.TrimPrefix(authHeader, "Bearer ")
 }

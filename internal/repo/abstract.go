@@ -14,10 +14,10 @@ type AbstractRepo struct {
 }
 
 func (a *AbstractRepo) getDB(ctx context.Context) *gorm.DB {
-    if tx, ok := ctx.Value(constanta.Tx).(*gorm.DB); ok {
-        return tx
-    }
-    return a.db
+	if tx, ok := ctx.Value(constanta.Tx).(*gorm.DB); ok {
+		return tx
+	}
+	return a.db
 }
 
 // Method untuk check scope (own atau all)

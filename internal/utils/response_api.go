@@ -1,8 +1,10 @@
 package utils
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"go-boilerplate/internal/dto/response"
 	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type APIResponse struct {
@@ -41,4 +43,17 @@ func SetResponseUnauthorized(c *fiber.Ctx, message string, err string) error {
 
 func SetResponseForbiden(c *fiber.Ctx, message string) error {
 	return SetResponseAPI(c, http.StatusForbidden, message, "", nil)
+}
+
+func SetResponseNotFound(c *fiber.Ctx, message string, err error) error {
+	return SetResponseAPI(c, http.StatusNotFound, message, err.Error(), nil)
+}
+
+func MapToListResponse[T any](list []T, totalCount int64, page, pageSize int) response.ListResponse[T] {
+	return response.ListResponse[T]{
+		List:       list,
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
+	}
 }

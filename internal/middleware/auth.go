@@ -6,7 +6,7 @@ import (
 	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/utils"
-	errorutils "go-boilerplate/internal/utils/errors"
+	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
 	"go-boilerplate/pkg/redis"
 	"os"

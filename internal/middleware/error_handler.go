@@ -47,10 +47,7 @@ func RecoverMiddleware() fiber.Handler {
 				fmt.Println(logMessage) // Cetak ke terminal
 
 				// Kirim respons umum ke client
-				_ = c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error":   "Internal Server Error",
-					"message": "An unexpected error occurred. Please try again later.",
-				})
+				_ = utils.SetResponseAPI(c, fiber.StatusInternalServerError, "Internal Server Error", "An unexpected error occurred. Please try again later.", nil)
 			}
 		}()
 		return c.Next()

@@ -5,6 +5,7 @@ import (
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/usecase"
 	"go-boilerplate/internal/utils"
+	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,8 +36,7 @@ func (ctrl *UserDahboardController) CreateUserDashboard(c *fiber.Ctx) error {
 	}
 
 	if err := ctrl.UserDashboardUsecase.CreateUserDashboard(c.Context(), &reqUser); err != nil {
-		logger.Error("Failed to register user", err)
-		return utils.SetResponseBadRequest(c, "Failed to register user", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed create user")
 	}
 
 	return utils.SetResponseOK(c, "success register user", nil)
@@ -62,8 +62,7 @@ func (ctrl *UserDahboardController) GetListUser(c *fiber.Ctx) error {
 
 	response, err := ctrl.UserDashboardUsecase.GetListUser(c.Context(), utils.GetFiltersAndPagination(c))
 	if err != nil {
-		logger.Error("Failed get list user", err)
-		return utils.SetResponseBadRequest(c, "Failed get list user", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed get list user")
 	}
 
 	return utils.SetResponseOK(c, "success get list user", response)
@@ -92,8 +91,7 @@ func (ctrl *UserDahboardController) UpdateUserByID(c *fiber.Ctx) error {
 
 	response, err := ctrl.UserDashboardUsecase.UpdateUserByID(c.Context(), &reqUpdate)
 	if err != nil {
-		logger.Error("Failed update user", err)
-		return utils.SetResponseBadRequest(c, "Failed update user", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed update user")
 	}
 
 	return utils.SetResponseOK(c, "success update user", response)

@@ -6,7 +6,7 @@ import (
 	"go-boilerplate/internal/middleware"
 	"go-boilerplate/internal/usecase"
 	"go-boilerplate/internal/utils"
-	"go-boilerplate/internal/utils/errors"
+	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
 	"time"
 
@@ -46,7 +46,7 @@ func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
 	var reqLogin request.ReqLogin
 	if err := c.BodyParser(&reqLogin); err != nil {
 		logger.Error("Failed to parse login request", err)
-		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
+		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	err := reqLogin.ValidateRequest()
@@ -78,12 +78,12 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	)
 	if err = c.BodyParser(&reqToken); err != nil {
 		logger.Error("Failed to parse token request", err)
-		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
+		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	err = reqToken.ValidateRequest()
 	if err != nil {
-		return utils.SetResponseBadRequest(c, errors.ErrMessageInvalidRequestData, err)
+		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	// Validasi temporary token
@@ -97,7 +97,7 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	user, err = ctrl.AuthUsecase.LoginByUserId(c.Context(), user.ID)
 	if err != nil {
 		logger.Error("Error GetUserByID", err)
-		return utils.SetResponseUnauthorized(c, errors.ErrMessageDataNotFound, err.Error())
+		return utils.SetResponseUnauthorized(c, errorutils.ErrMessageDataNotFound, err.Error())
 	}
 
 	accessToken, err := middleware.GenerateTokenUserDashboard(user)

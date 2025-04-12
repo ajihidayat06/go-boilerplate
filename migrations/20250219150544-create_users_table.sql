@@ -1,6 +1,7 @@
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS users (
     id bigserial NOT NULL,
+    name VARCHAR(200) NOT NULL,
     username VARCHAR(200) NOT NULL,
     password VARCHAR(200) NOT NULL,
     email VARCHAR NOT NULL,

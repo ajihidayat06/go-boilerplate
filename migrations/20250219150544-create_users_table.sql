@@ -53,16 +53,35 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 );
 
 INSERT INTO permissions (code, name, group_menu, action, created_by, updated_by) VALUES
-('user:write', 'Permission to write user data (user-write)', 'user', 'write', 1, 1),
+-- User
+('user:create', 'Permission to create user data (user-create)', 'user', 'create', 1, 1),
 ('user:read', 'Permission to read user data (user-read)', 'user', 'read', 1, 1),
-('category:write', 'Permission to write category data (category-write)', 'category', 'write', 1, 1),
+('user:update', 'Permission to update user data (user-update)', 'user', 'update', 1, 1),
+('user:delete', 'Permission to delete user data (user-delete)', 'user', 'delete', 1, 1),
+
+-- Category
+('category:create', 'Permission to create category data (category-create)', 'category', 'create', 1, 1),
 ('category:read', 'Permission to read category data (category-read)', 'category', 'read', 1, 1),
-('role:write', 'Permission to write role data (role-write)', 'role', 'write', 1, 1),
+('category:update', 'Permission to update category data (category-update)', 'category', 'update', 1, 1),
+('category:delete', 'Permission to delete category data (category-delete)', 'category', 'delete', 1, 1),
+
+-- Role
+('role:create', 'Permission to create role data (role-create)', 'role', 'create', 1, 1),
 ('role:read', 'Permission to read role data (role-read)', 'role', 'read', 1, 1),
-('permissions:write', 'Permission to write permissions data (permissions-write)', 'permissions', 'write', 1, 1),
+('role:update', 'Permission to update role data (role-update)', 'role', 'update', 1, 1),
+('role:delete', 'Permission to delete role data (role-delete)', 'role', 'delete', 1, 1),
+
+-- Permissions
+('permissions:create', 'Permission to create permissions data (permissions-create)', 'permissions', 'create', 1, 1),
 ('permissions:read', 'Permission to read permissions data (permissions-read)', 'permissions', 'read', 1, 1),
+('permissions:update', 'Permission to update permissions data (permissions-update)', 'permissions', 'update', 1, 1),
+('permissions:delete', 'Permission to delete permissions data (permissions-delete)', 'permissions', 'delete', 1, 1),
+
+-- Role Permissions
+('role_permissions:create', 'Permission to create role permissions data (role_permissions-create)', 'role_permissions', 'create', 1, 1),
 ('role_permissions:read', 'Permission to read role permissions data (role_permissions-read)', 'role_permissions', 'read', 1, 1),
-('role_permissions:write', 'Permission to write role permissions data (role_permissions-write)', 'role_permissions', 'write', 1, 1);
+('role_permissions:update', 'Permission to update role permissions data (role_permissions-update)', 'role_permissions', 'update', 1, 1),
+('role_permissions:delete', 'Permission to delete role permissions data (role_permissions-delete)', 'role_permissions', 'delete', 1, 1);
 
 -- +migrate Down
 DROP TABLE IF EXISTS role_permissions;

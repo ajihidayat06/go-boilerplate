@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/models"
@@ -9,6 +10,7 @@ import (
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -71,14 +73,6 @@ func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.
 		return err
 	}
 
-	var roleDb models.Roles
-	if reqUser.RoleID != 0 {
-		roleDb, err = u.getDataRole(ctx, reqUser.RoleID)
-		if err != nil {
-			return err
-		}
-	}
-
 	userLogin, err := utils.GetUserIDFromCtx(ctx)
 	if err != nil {
 		logger.Error(ctx, "Failed to get user id from context", err)
@@ -91,11 +85,39 @@ func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.
 		Username:  reqUser.Username,
 		Password:  reqUser.Password,
 		RoleID:    reqUser.RoleID,
-		Roles:     &roleDb,
 		CreatedAt: time.Now(),
 		CreatedBy: userLogin,
 		UpdatedAt: time.Now(),
 		UpdatedBy: userLogin,
+	}
+
+	var (
+		roleDb models.Roles
+	)
+
+	switch {
+	case reqUser.RoleID != 0:
+		roleDb, err = u.getDataRole(ctx, reqUser.RoleID)
+		if err != nil {
+			return err
+		}
+
+		user.RoleID = roleDb.ID
+	case reqUser.RoleID == 0 && (strings.TrimSpace(reqUser.Roles.Name) != "" || strings.TrimSpace(reqUser.Roles.Code) != ""):
+		roleCode := strings.ToLower(reqUser.Roles.Code)
+		if roleCode == constanta.RoleCodeAdmin {
+			roleCode = constanta.RoleCodeAdmin
+		} else {
+			roleCode = reqUser.Roles.Code
+		}
+
+		roles := models.Roles{
+			Name:      reqUser.Roles.Name,
+			Code:      roleCode,
+			CreatedBy: userLogin,
+			UpdatedBy: userLogin,
+		}
+		user.Roles = &roles
 	}
 
 	return processWithTx(ctx, u.db, func(ctx context.Context) error {

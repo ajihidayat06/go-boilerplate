@@ -31,7 +31,16 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *models.User) error {
-	return r.getDB(ctx).Create(user).Error
+	db := r.getDB(ctx)
+
+	err := db.WithContext(ctx).
+		Scopes().
+		Create(user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *userRepository) Login(ctx context.Context, emailOrUsername string, userID int64) (*models.User, error) {

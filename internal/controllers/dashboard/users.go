@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/dto/request"
 	"go-boilerplate/internal/usecase"
 	"go-boilerplate/internal/utils"
@@ -23,6 +24,9 @@ func NewUserDashboardController(
 
 func (ctrl *UserDahboardController) CreateUserDashboard(c *fiber.Ctx) error {
 	ctx := utils.GetContext(c)
+
+	fmt.Println("DEBUG user_id:", ctx.Value(constanta.AuthUserID)) // dari context
+	fmt.Println("DEBUG user_id locals:", c.Locals(constanta.AuthUserID))
 
 	var reqUser request.ReqUser
 	if err := c.BodyParser(&reqUser); err != nil {

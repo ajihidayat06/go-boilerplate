@@ -1,13 +1,15 @@
 package constanta
 
 const (
-	ScopeOwn     = "own"
-	ScopeAll     = "all"
+	ScopeOwn = "own"
+	ScopeAll = "all"
 )
 
 const (
-	AuthActionWrite = "write"
-	AuthActionRead  = "read"
+	AuthActionCreate = "create"
+	AuthActionRead   = "read"
+	AuthActionUpdate = "update"
+	AuthActionDelete = "delete"
 )
 
 const (

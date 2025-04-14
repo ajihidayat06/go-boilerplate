@@ -7,12 +7,13 @@ import (
 
 // req user
 type ReqUser struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username" validate:"required"`
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-	RoleID   int64  `json:"role_id"`
+	ID       int64    `json:"id"`
+	Username string   `json:"username" validate:"required"`
+	Name     string   `json:"name" validate:"required"`
+	Email    string   `json:"email" validate:"required,email"`
+	Password string   `json:"password" validate:"required"`
+	RoleID   int64    `json:"role_id"`
+	Roles    ReqRoles `json:"roles"`
 }
 
 var ReqUserErrorMessage = map[string]string{

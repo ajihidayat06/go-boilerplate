@@ -9,18 +9,28 @@ const (
 )
 
 const (
-	MenuUserActionWrite = MenuGroupUser + ":" + AuthActionWrite
-	MenuUserActionRead  = MenuGroupUser + ":" + AuthActionRead
+	MenuUserActionCreate = MenuGroupUser + ":" + AuthActionCreate
+	MenuUserActionRead   = MenuGroupUser + ":" + AuthActionRead
+	MenuUserActionUpdate = MenuGroupUser + ":" + AuthActionUpdate
+	MenuUserActionDelete = MenuGroupUser + ":" + AuthActionDelete
 
-	MenuCategoryActionWrite = MenuGroupCategory + ":" + AuthActionWrite
-	MenuCategoryActionRead  = MenuGroupCategory + ":" + AuthActionRead
+	MenuCategoryActionCreate = MenuGroupCategory + ":" + AuthActionCreate
+	MenuCategoryActionRead   = MenuGroupCategory + ":" + AuthActionRead
+	MenuCategoryActionUpdate = MenuGroupCategory + ":" + AuthActionUpdate
+	MenuCategoryActionDelete = MenuGroupCategory + ":" + AuthActionDelete
 
-	MenuRoleActionWrite = MenuGroupRole + ":" + AuthActionWrite
-	MenuRoleActionRead  = MenuGroupRole + ":" + AuthActionRead
+	MenuRoleActionCreate = MenuGroupRole + ":" + AuthActionCreate
+	MenuRoleActionRead   = MenuGroupRole + ":" + AuthActionRead
+	MenuRoleActionUpdate = MenuGroupRole + ":" + AuthActionUpdate
+	MenuRoleActionDelete = MenuGroupRole + ":" + AuthActionDelete
 
-	MenuPermissionsActionWrite = MenuGroupPermissions + ":" + AuthActionWrite
-	MenuPermissionsActionRead  = MenuGroupPermissions + ":" + AuthActionRead
+	MenuPermissionsActionCreate = MenuGroupPermissions + ":" + AuthActionCreate
+	MenuPermissionsActionRead   = MenuGroupPermissions + ":" + AuthActionRead
+	MenuPermissionsActionUpdate = MenuGroupPermissions + ":" + AuthActionUpdate
+	MenuPermissionsActionDelete = MenuGroupPermissions + ":" + AuthActionDelete
 
-	MenuRolePermissionsActionRead  = MenuGroupRolePermissions + ":" + AuthActionRead
-	MenuRolePermissionsActionWrite = MenuGroupRolePermissions + ":" + AuthActionWrite
+	MenuRolePermissionsActionRead   = MenuGroupRolePermissions + ":" + AuthActionRead
+	MenuRolePermissionsActionCreate = MenuGroupRolePermissions + ":" + AuthActionCreate
+	MenuRolePermissionsActionUpdate = MenuGroupRolePermissions + ":" + AuthActionUpdate
+	MenuRolePermissionsActionDelete = MenuGroupRolePermissions + ":" + AuthActionDelete
 )

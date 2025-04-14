@@ -1,8 +1,8 @@
 package request
 
 type ReqRoles struct {
-	Code string `json:"code" validate:"required"`
-	Name string `json:"name" validate:"required"`
+	Code string `json:"code"`
+	Name string `json:"name"`
 }
 
 var ReqRolesErrorMessage = map[string]string{
@@ -11,9 +11,9 @@ var ReqRolesErrorMessage = map[string]string{
 }
 
 type ReqRoleUpdate struct {
-	ID           int64  `json:"id" validate:"required"`
-	Code         string `json:"code" validate:"required"`
-	Name         string `json:"name" validate:"required"`
+	ID   int64  `json:"id" validate:"required"`
+	Code string `json:"code" validate:"required"`
+	Name string `json:"name" validate:"required"`
 	AbstractRequest
 }
 

@@ -43,7 +43,9 @@ func InitCategoryDashboard(db *gorm.DB) *dashboard.CategoryDashboardController {
 
 func InitRoleDashboard(db *gorm.DB) *dashboard.RoleController {
 	roleRepo := repo.NewRoleRepository(db)
-	roleUC := usecase.NewRoleUseCase(db, roleRepo)
+	permissionsRepo := repo.NewPermissionsRepository(db)
+	rolePermissionsRepo := repo.NewRolePermissionsRepository(db)
+	roleUC := usecase.NewRoleUseCase(db, roleRepo, permissionsRepo, rolePermissionsRepo)
 	roleController := dashboard.NewRoleController(roleUC)
 
 	return roleController

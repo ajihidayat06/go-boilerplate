@@ -165,8 +165,10 @@ func CheckAdminRoleMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		ctx := utils.GetContext(c)
 
-		roleName := c.Locals(constanta.AuthRoleName)
-		if roleName == nil || (roleName != constanta.RoleCodeAdmin && roleName != constanta.RoleCodeSuperAdmin) {
+		// roleName := ctx.Value(constanta.AuthRoleName)
+		roleCode := ctx.Value(constanta.AuthRoleCode)
+		isAdmin := ctx.Value(constanta.IsAdmin).(bool)
+		if (roleCode != constanta.RoleCodeAdmin && roleCode != constanta.RoleCodeSuperAdmin) || !isAdmin {
 			logger.Error(ctx, "User does not have admin role", nil)
 			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}

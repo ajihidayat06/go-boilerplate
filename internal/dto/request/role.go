@@ -1,13 +1,15 @@
 package request
 
 type ReqRoles struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Code            string              `json:"code"`
+	Name            string              `json:"name"`
+	RolePermissions []ReqRolePermission `json:"role_permissions" validate:"required,dive"`
 }
 
 var ReqRolesErrorMessage = map[string]string{
-	"code": "code required",
-	"name": "name required",
+	"Code":         "code required",
+	"Name":         "name required",
+	"PermissionID": "Permission ID required",
 }
 
 type ReqRoleUpdate struct {

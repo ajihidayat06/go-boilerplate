@@ -9,11 +9,12 @@ import (
 )
 
 type RolePermissionsRepository interface {
-	Create(ctx context.Context, rolePermission *models.RolePermissions) error
+	Create(ctx context.Context, rolePermission []models.RolePermissions) ([]models.RolePermissions, error)
 	GetRolePermissionByID(ctx context.Context, id int64) (models.RolePermissions, error)
 	GetListRolePermissions(ctx context.Context) ([]models.RolePermissions, error)
 	UpdateRolePermissionsByID(ctx context.Context, id int64, updatedAt time.Time, rolePermission models.RolePermissions) (models.RolePermissions, error)
 	DeleteRolePermissionsByID(ctx context.Context, id int64, updatedAt time.Time) error
+	DeleteRolePermissionsByRoleID(ctx context.Context, roleID int64) error
 }
 
 type rolePermissionsRepository struct {
@@ -28,8 +29,13 @@ func NewRolePermissionsRepository(db *gorm.DB) RolePermissionsRepository {
 	}
 }
 
-func (r *rolePermissionsRepository) Create(ctx context.Context, rolePermission *models.RolePermissions) error {
-	return r.getDB(ctx).WithContext(ctx).Create(rolePermission).Error
+func (r *rolePermissionsRepository) Create(ctx context.Context, rolePermissions []models.RolePermissions) ([]models.RolePermissions, error) {
+	err := r.getDB(ctx).WithContext(ctx).Create(&rolePermissions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return rolePermissions, nil
 }
 
 func (r *rolePermissionsRepository) GetRolePermissionByID(ctx context.Context, id int64) (models.RolePermissions, error) {
@@ -68,6 +74,19 @@ func (r *rolePermissionsRepository) DeleteRolePermissionsByID(ctx context.Contex
 
 	err := db.WithContext(ctx).
 		Where("id = ? AND updated_at = ?", id, updatedAt).
+		Delete(&models.RolePermissions{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *rolePermissionsRepository) DeleteRolePermissionsByRoleID(ctx context.Context, roleID int64) error {
+	db := r.getDB(ctx)
+
+	err := db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
+		Where("role_id = ?", roleID).
 		Delete(&models.RolePermissions{}).Error
 	if err != nil {
 		return err

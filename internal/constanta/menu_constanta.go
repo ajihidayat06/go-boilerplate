@@ -34,3 +34,10 @@ const (
 	MenuRolePermissionsActionUpdate = MenuGroupRolePermissions + ":" + AuthActionUpdate
 	MenuRolePermissionsActionDelete = MenuGroupRolePermissions + ":" + AuthActionDelete
 )
+
+const (
+	FieldUserID      = "ID"
+	FieldCode        = "CODE"
+	FieldName        = "NAME"
+	FieldPermissions = "PERMISSIONS"
+)

@@ -68,6 +68,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int64) (models.User
 
 	err := r.db.WithContext(ctx).
 		Scopes(r.withCheckScope(ctx)).
+		Preload("Roles").
 		Where(" id = ? ", id).
 		First(&user).Error
 	if err != nil {
@@ -117,7 +118,6 @@ func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.Req
 	return user, nil
 }
 
-// DeleteUserByID implements UserRepository.
 func (r *userRepository) DeleteUserByID(ctx context.Context, id int64, updatedAt time.Time) error {
 	db := r.getDB(ctx)
 

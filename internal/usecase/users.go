@@ -64,7 +64,7 @@ func (u *userUseCase) GetUserByID(ctx context.Context, id int64) (response.UserR
 		return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	return response.SetUserResponse(userDb), nil
+	return response.SetUserDetailResponse(userDb), nil
 }
 
 func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
@@ -204,7 +204,7 @@ func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUs
 		return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	return response.SetUserResponse(res), nil
+	return response.SetUserDetailResponse(res), nil
 }
 
 func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error {

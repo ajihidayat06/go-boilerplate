@@ -2,60 +2,133 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/dto/request"
+	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/repo"
+	"go-boilerplate/internal/utils"
+	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
-	"time"
+	"strings"
 
 	"gorm.io/gorm"
 )
 
 type RoleUseCase interface {
 	CreateRole(ctx context.Context, req *request.ReqRoles) error
-	GetRoleByID(ctx context.Context, id int64) (models.Roles, error)
-	GetListRole(ctx context.Context) ([]models.Roles, error)
+	GetRoleByID(ctx context.Context, id int64) (response.RolesResponse, error)
+	GetListRole(ctx context.Context, listStruct *models.GetListStruct) (response.ListResponse[response.RolesResponse], error)
 	UpdateRoleByID(ctx context.Context, req *request.ReqRoleUpdate) (models.Roles, error)
-	DeleteRoleByID(ctx context.Context, id int64, updatedAt time.Time) error
+	DeleteRoleByID(ctx context.Context, id int64, reqData request.AbstractRequest) error
 }
 
 type roleUseCase struct {
-	db       *gorm.DB
-	roleRepo repo.RoleRepository
+	db                  *gorm.DB
+	roleRepo            repo.RoleRepository
+	permissionsRepo     repo.PermissionsRepository
+	rolePermissionsRepo repo.RolePermissionsRepository
 }
 
 func NewRoleUseCase(
 	db *gorm.DB,
 	roleRepo repo.RoleRepository,
+	permissionsRepo repo.PermissionsRepository,
+	rolePermissionsRepo repo.RolePermissionsRepository,
 ) RoleUseCase {
 	return &roleUseCase{
-		db:       db,
-		roleRepo: roleRepo,
+		db:                  db,
+		roleRepo:            roleRepo,
+		permissionsRepo:     permissionsRepo,
+		rolePermissionsRepo: rolePermissionsRepo,
 	}
 }
 
 func (uc *roleUseCase) CreateRole(ctx context.Context, req *request.ReqRoles) error {
-	role := models.Roles{
-		Code: req.Code,
-		Name: req.Name,
+	userLogin, err := utils.GetUserIDFromCtx(ctx)
+	if err != nil {
+		return errorutils.HandleCustomError(ctx, err, errorutils.ErrMessageUserNotLogin, constanta.FieldUserID)
 	}
 
-	return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
-        err := uc.roleRepo.Create(ctx, &role)
-        if err != nil {
+	if len(req.RolePermissions) == 0 {
+		return errorutils.HandleCustomError(ctx, nil, errorutils.ErrMessaageDataRequired, constanta.FieldPermissions)
+	}
+
+	// get role by code
+	roleDB, err := uc.roleRepo.GetRoleByCode(ctx, req.Code)
+	if err == nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return errorutils.HandleRepoError(ctx, err)
+	}
+
+	if strings.EqualFold(roleDB.Code, req.Code) {
+		return errorutils.HandleCustomError(ctx, nil, errorutils.ErrMessaageDataAlreadyExists, constanta.FieldCode)
+	}
+
+	role := models.Roles{
+		Code:      req.Code,
+		Name:      req.Name,
+		CreatedBy: userLogin,
+		UpdatedBy: userLogin,
+	}
+
+	return processWithTx(ctx, uc.db, func(ctx context.Context) error {
+		err := uc.roleRepo.Create(ctx, &role)
+		if err != nil {
 			logger.Error(ctx, "Failed to create role", err)
-            return err
-        }
-        return nil
-    })
+			return errorutils.HandleRepoError(ctx, err)
+		}
+
+		var rolePermissions []models.RolePermissions // check if role permissions is empty
+		for _, v := range req.RolePermissions {
+			permissionsDB, err := uc.permissionsRepo.GetPermissionsByID(ctx, v.PermissionID)
+			if err != nil {
+				return errorutils.HandleRepoError(ctx, err)
+			}
+
+			if permissionsDB.ID == 0 {
+				return errorutils.HandleCustomError(ctx, nil, errorutils.ErrMessageDataNotFound, constanta.FieldPermissions)
+			}
+
+			rolePermissions = append(rolePermissions, models.RolePermissions{
+				RoleID:        role.ID,
+				PermissionsID: permissionsDB.ID,
+				AccessScope:   v.Scope,
+				CreatedBy:     userLogin,
+				UpdatedBy:     userLogin,
+			})
+		}
+
+		rolePermissions, err = uc.rolePermissionsRepo.Create(ctx, rolePermissions)
+		if err != nil {
+			return errorutils.HandleRepoError(ctx, err)
+		}
+
+		role.RolePermissions = &rolePermissions
+
+		return nil
+	})
 }
 
-func (uc *roleUseCase) GetRoleByID(ctx context.Context, id int64) (models.Roles, error) {
-	return uc.roleRepo.GetRoleByID(ctx, id)
+func (uc *roleUseCase) GetRoleByID(ctx context.Context, id int64) (response.RolesResponse, error) {
+	userDb, err := uc.roleRepo.GetRoleByID(ctx, id)
+	if err != nil {
+		logger.Error(ctx, "Failed to get role by id", err)
+		return response.RolesResponse{}, errorutils.HandleRepoError(ctx, err)
+	}
+
+	return response.SetRoleDetailResponse(userDb), nil
 }
 
-func (uc *roleUseCase) GetListRole(ctx context.Context) ([]models.Roles, error) {
-	return uc.roleRepo.GetListRole(ctx)
+func (uc *roleUseCase) GetListRole(ctx context.Context, listStruct *models.GetListStruct) (response.ListResponse[response.RolesResponse], error) {
+	rolesDb, count, err := uc.roleRepo.GetListRole(ctx, listStruct)
+	if err != nil {
+		logger.Error(ctx, "Failed to get list user", err)
+		return response.ListResponse[response.RolesResponse]{}, errorutils.HandleRepoError(ctx, err)
+	}
+
+	listResponse := utils.MapToListResponse(response.SetListResponseRole(rolesDb), count, listStruct.Page, listStruct.Limit)
+	return listResponse, nil
 }
 
 func (uc *roleUseCase) UpdateRoleByID(ctx context.Context, req *request.ReqRoleUpdate) (models.Roles, error) {
@@ -71,26 +144,50 @@ func (uc *roleUseCase) UpdateRoleByID(ctx context.Context, req *request.ReqRoleU
 			Code: req.Code,
 			Name: req.Name,
 		}
-	
+
 		updatedRole, err = uc.roleRepo.UpdateRoleByID(ctx, req.ID, req.UpdatedAt, role)
 		if err != nil {
 			logger.Error(ctx, "Failed to update role", err)
 			return err
 		}
-	
+
 		return nil
 	})
 
 	return updatedRole, err
 }
 
-func (uc *roleUseCase) DeleteRoleByID(ctx context.Context, id int64, updatedAt time.Time) error {
-	return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
-        err := uc.roleRepo.DeleteRoleByID(ctx, id, updatedAt)
-        if err != nil {
-			logger.Error(ctx, "Failed to delete role", err)
-            return err
-        }
-        return nil
-    })
+func (uc *roleUseCase) DeleteRoleByID(ctx context.Context, id int64, reqData request.AbstractRequest) error {
+	err := reqData.ValidateUpdatedAt()
+	if err != nil {
+		return err
+	}
+
+	roleDb, err := uc.roleRepo.GetRoleByID(ctx, id)
+	if err != nil {
+		return errorutils.HandleRepoError(ctx, err)
+	}
+
+	if roleDb.ID == 0 {
+		return errorutils.ErrDataNotFound
+	}
+
+	if !utils.ValidateUpdatedAtRequest(reqData.UpdatedAt, roleDb.UpdatedAt) {
+		return errorutils.ErrDataDataUpdated
+	}
+
+	return processWithTx(ctx, uc.db, func(ctx context.Context) error {
+		uc.rolePermissionsRepo.DeleteRolePermissionsByRoleID(ctx, id)
+		if err != nil {
+			logger.Error(ctx, "Failed to delete role permissions", err)
+			return errorutils.HandleRepoError(ctx, err)
+		}
+
+		err := uc.roleRepo.DeleteRoleByID(ctx, id, reqData.UpdatedAt)
+		if err != nil {
+			logger.Error(ctx, "Failed to delete user", err)
+			return errorutils.HandleRepoError(ctx, err)
+		}
+		return nil
+	})
 }

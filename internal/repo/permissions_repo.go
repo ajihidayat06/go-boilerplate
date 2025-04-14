@@ -10,7 +10,7 @@ import (
 
 type PermissionsRepository interface {
 	Create(ctx context.Context, permission *models.Permissions) error
-	GetPermissionByID(ctx context.Context, id int64) (models.Permissions, error)
+	GetPermissionsByID(ctx context.Context, id int64) (models.Permissions, error)
 	GetListPermissions(ctx context.Context) ([]models.Permissions, error)
 	UpdatePermissionsByID(ctx context.Context, id int64, updatedAt time.Time, permissions models.Permissions) (models.Permissions, error)
 	DeletePermissionsByID(ctx context.Context, id int64, updatedAt time.Time) error
@@ -18,11 +18,6 @@ type PermissionsRepository interface {
 
 type permissionsRepository struct {
 	AbstractRepo
-}
-
-// GetPermissionByID implements PermissionsRepository.
-func (r *permissionsRepository) GetPermissionByID(ctx context.Context, id int64) (models.Permissions, error) {
-	panic("unimplemented")
 }
 
 func NewPermissionsRepository(db *gorm.DB) PermissionsRepository {

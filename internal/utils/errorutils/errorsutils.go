@@ -19,6 +19,9 @@ const (
 	ErrMessageDataNotFound          = "Data tidak ditemukan"
 	ErrMessageInvalidRequestData    = "Data tidak valid"
 	ErrMessageDataUpdated           = "data telah diperbarui, silakan muat ulang data terbaru"
+	ErrMessaageDataAlreadyExists    = "data sudah ada"
+	ErrMessaageDataRequired         = "data tidak boleh kosong"
+	ErrMessageUserNotLogin          = "silahkan login terlebih dahulu"
 )
 
 var (
@@ -28,6 +31,41 @@ var (
 	ErrPasswordNotValid    = errors.New("password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters")
 	ErrDataDataUpdated     = errors.New(ErrMessageDataUpdated)
 )
+
+type CustomError struct {
+	Message    string
+	FieldError string
+	Err        error
+}
+
+func (e *CustomError) Error() string {
+	if e.FieldError != "" {
+		return fmt.Sprintf("%s [%s]", e.Message, e.FieldError)
+	}
+	return e.Message
+}
+
+func HandleCustomError(ctx context.Context, baseErr error, msg string, fieldError ...string) error {
+	var fe string
+	if len(fieldError) > 0 {
+		fe = fieldError[0]
+	}
+
+	// Kalau baseErr nil, tetap buat error berdasarkan msg dan fieldError
+	if baseErr == nil {
+		baseErr = fmt.Errorf("%s", msg)
+	}
+
+	wrappedErr := &CustomError{
+		Message:    msg,
+		FieldError: fe,
+		Err:        baseErr,
+	}
+
+	logger.LogWithCaller(ctx, msg, baseErr, 2)
+
+	return wrappedErr
+}
 
 func HandleRepoError(ctx context.Context, err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {

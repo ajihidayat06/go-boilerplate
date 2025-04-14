@@ -11,7 +11,7 @@ import (
 )
 
 type RolePermissionsUsecase interface {
-	CreateRolePermission(ctx context.Context, req request.ReqRolePermission) error
+	// CreateRolePermission(ctx context.Context, req request.ReqRolePermission) error
 	GetRolePermissionByID(ctx context.Context, id int64) (models.RolePermissions, error)
 	GetListRolePermissions(ctx context.Context) ([]models.RolePermissions, error)
 	UpdateRolePermissionByID(ctx context.Context, id int64, updatedAt time.Time, req request.ReqRolePermission) (models.RolePermissions, error)
@@ -27,21 +27,21 @@ func NewRolePermissionsUsecase(repo repo.RolePermissionsRepository) RolePermissi
 }
 
 // CreateRolePermission creates a new role-permission record.
-func (u *rolePermissionsUsecase) CreateRolePermission(ctx context.Context, req request.ReqRolePermission) error {
-	if req.RoleID <= 0 || req.PermissionID <= 0 {
-		return errors.New("invalid role ID or permission ID")
-	}
+// func (u *rolePermissionsUsecase) CreateRolePermission(ctx context.Context, req request.ReqRolePermission) error {
+// 	// if req.RoleID <= 0 || req.PermissionID <= 0 {
+// 	// 	return errors.New("invalid role ID or permission ID")
+// 	// }
 
-	rolePermission := models.RolePermissions{
-		RoleID:        req.RoleID,
-		PermissionsID: req.PermissionID,
-		AccessScope:   req.Scope,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-	}
+// 	rolePermission := models.RolePermissions{
+// 		// RoleID:        req.RoleID,
+// 		PermissionsID: req.PermissionID,
+// 		AccessScope:   req.Scope,
+// 		CreatedAt:     time.Now(),
+// 		UpdatedAt:     time.Now(),
+// 	}
 
-	return u.repo.Create(ctx, &rolePermission)
-}
+// 	return u.repo.Create(ctx, &rolePermission)
+// }
 
 // GetRolePermissionByID retrieves a role-permission record by its ID.
 func (u *rolePermissionsUsecase) GetRolePermissionByID(ctx context.Context, id int64) (models.RolePermissions, error) {
@@ -64,7 +64,7 @@ func (u *rolePermissionsUsecase) UpdateRolePermissionByID(ctx context.Context, i
 	}
 
 	rolePermission := models.RolePermissions{
-		RoleID:        req.RoleID,
+		// RoleID:        req.RoleID,
 		PermissionsID: req.PermissionID,
 		AccessScope:   req.Scope,
 		UpdatedAt:     time.Now(),

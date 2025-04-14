@@ -34,10 +34,10 @@ func (ctrl *RolePermissionsController) CreateRolePermission(c *fiber.Ctx) error 
 		return utils.SetResponseBadRequest(c, "Invalid request", err)
 	}
 
-	if err := ctrl.RolePermissionsUseCase.CreateRolePermission(ctx, reqRolePermission); err != nil {
-		logger.Error(ctx, "Failed to create role permission", err)
-		return utils.SetResponseBadRequest(c, "Failed to create role permission", err)
-	}
+	// if err := ctrl.RolePermissionsUseCase.CreateRolePermission(ctx, reqRolePermission); err != nil {
+	// 	logger.Error(ctx, "Failed to create role permission", err)
+	// 	return utils.SetResponseBadRequest(c, "Failed to create role permission", err)
+	// }
 
 	return utils.SetResponseOK(c, "success create role permission", nil)
 }

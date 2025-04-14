@@ -98,9 +98,9 @@ func (r *userRepository) UpdateUserByID(ctx context.Context, reqData request.Req
 
 	err := db.WithContext(ctx).
 		Scopes(r.withCheckScope(ctx)).
-		Model(user).
+		Model(&user).
 		Where("id = ? AND updated_at = ?", reqData.ID, reqData.UpdatedAt).
-		Updates(user).Error
+		Updates(&user).Error
 	if err != nil {
 		return models.User{}, err
 	}

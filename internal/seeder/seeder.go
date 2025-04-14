@@ -1,6 +1,7 @@
 package seeder
 
 import (
+	"context"
 	"errors"
 	"go-boilerplate/internal/constanta"
 	"go-boilerplate/internal/models"
@@ -12,10 +13,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func SeedSuperAdmin(db *gorm.DB) error {
+func SeedSuperAdmin(ctx context.Context, db *gorm.DB) error {
 	if db == nil {
 		err := errors.New("database connection is nil")
-		logger.Error("Database connection is nil", err)
+		logger.Error(ctx, "Database connection is nil", err)
 		return err
 	}
 
@@ -29,11 +30,11 @@ func SeedSuperAdmin(db *gorm.DB) error {
 				Code: constanta.RoleCodeSuperAdmin,
 			}
 			if err := db.Create(&role).Error; err != nil {
-				logger.Error("Failed to create superadmin role", err)
+				logger.Error(ctx, "Failed to create superadmin role", err)
 				return err
 			}
 		} else {
-			logger.Error("Failed to query superadmin role", err)
+			logger.Error(ctx, "Failed to query superadmin role", err)
 			return err
 		}
 	}
@@ -43,7 +44,7 @@ func SeedSuperAdmin(db *gorm.DB) error {
 	superAdminPassword := os.Getenv("SUPERADMIN_PASSWORD")
 	if superAdminEmail == "" || superAdminPassword == "" {
 		err := errors.New("SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD environment variable is not set")
-		logger.Error("SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD environment variable is not set", err)
+		logger.Error(ctx, "SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD environment variable is not set", err)
 		return err
 	}
 
@@ -54,7 +55,7 @@ func SeedSuperAdmin(db *gorm.DB) error {
 			// Hash password
 			hashedPassword, err := utils.HashPassword(superAdminPassword)
 			if err != nil {
-				logger.Error("Failed to hash password", err)
+				logger.Error(ctx, "Failed to hash password", err)
 				return err
 			}
 
@@ -68,15 +69,15 @@ func SeedSuperAdmin(db *gorm.DB) error {
 				UpdatedAt: time.Now(),
 			}
 			if err := db.Create(&user).Error; err != nil {
-				logger.Error("Failed to create superadmin user", err)
+				logger.Error(ctx, "Failed to create superadmin user", err)
 				return err
 			}
 		} else {
-			logger.Error("Failed to query superadmin user", err)
+			logger.Error(ctx, "Failed to query superadmin user", err)
 			return err
 		}
 	}
 
-	logger.Info("Superadmin seeding completed successfully", nil)
+	logger.Info(ctx, "Superadmin seeding completed successfully", nil)
 	return nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go-boilerplate/config"
 	"go-boilerplate/internal/middleware"
@@ -25,7 +26,7 @@ func main() {
 	fmt.Printf("DEBUG_MODE: %s\n", os.Getenv("DEBUG_MODE"))
 
 	logger.InitLogger()
-	logger.Info("Starting API server...", nil)
+	logger.Info(context.Background(), "Starting API server...", nil)
 
 	err := godotenv.Load()
 	if err != nil {
@@ -45,8 +46,8 @@ func main() {
 		log.Fatalf("Failed to initialize Redis: %v", err)
 	}
 
-	if err := seeder.SeedSuperAdmin(db); err != nil {
-		logger.Error("Failed to seed superadmin", err)
+	if err := seeder.SeedSuperAdmin(context.Background(), db); err != nil {
+		logger.Error(context.Background(), "Failed to seed superadmin", err)
 		log.Fatalf("Failed to seed superadmin: %v", err)
 	}
 
@@ -93,8 +94,9 @@ func getPort() string {
 }
 
 func setupMiddlewares(app *fiber.App) {
-	app.Use(helmet.New())                   // Secure headers
-	app.Use(config.CorsConfig())            // CORS
-	app.Use(middleware.LoggingMiddleware)   // Logging
-	app.Use(middleware.RecoverMiddleware()) // Recovery
+	app.Use(helmet.New()) // Secure headers
+	app.Use(config.CorsConfig())
+	app.Use(middleware.SetTraceIDAndRequestIDMiddleware) // Fiber context to standard context
+	app.Use(middleware.LoggingMiddleware)          // Logging
+	app.Use(middleware.RecoverMiddleware())        // Recovery
 }

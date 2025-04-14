@@ -11,7 +11,9 @@ import (
 )
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
-	logger.Error("Unhandled error", err)
+	ctx := utils.GetContext(c)
+	
+	logger.Error(ctx, "Unhandled error", err)
 	code := fiber.StatusInternalServerError
 	if e, ok := err.(*fiber.Error); ok {
 		code = e.Code

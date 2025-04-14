@@ -1,6 +1,7 @@
 package errorutils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"go-boilerplate/internal/utils"
@@ -17,33 +18,40 @@ const (
 	ErrMessageInvalidOrExpiredToken = "Token tidak sesuai atau kadaluwarsa"
 	ErrMessageDataNotFound          = "Data tidak ditemukan"
 	ErrMessageInvalidRequestData    = "Data tidak valid"
+	ErrMessageDataUpdated           = "data telah diperbarui, silakan muat ulang data terbaru"
 )
 
 var (
 	ErrInvalidCredentials  = errors.New("invalid credentials")
-	ErrDataNotFound        = errors.New("Data tidak ditemukan")
+	ErrDataNotFound        = errors.New("data tidak ditemukan")
 	ErrInternalServerError = errors.New("internal server error")
 	ErrPasswordNotValid    = errors.New("password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters")
+	ErrDataDataUpdated     = errors.New(ErrMessageDataUpdated)
 )
 
-func HandleRepoError(err error) error {
+func HandleRepoError(ctx context.Context, err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.LogWithCaller(ctx, ErrMessageDataNotFound, err, 2)
 		return ErrDataNotFound
 	}
-	return errors.New(fmt.Sprintf(`%s : %s`, ErrInternalServerError.Error(), err.Error()))
+
+	logger.LogWithCaller(ctx, ErrInternalServerError.Error(), err, 2)
+	return fmt.Errorf(`%s : %s`, ErrInternalServerError.Error(), err.Error())
 }
 
 func HandleUsecaseError(c *fiber.Ctx, err error, msg string) error {
+	ctx := utils.GetContext(c)
+
 	if errors.Is(err, ErrDataNotFound) {
-		logger.Error(ErrMessageDataNotFound, err)
+		logger.LogWithCaller(ctx, ErrMessageDataNotFound, err, 2)
 		return utils.SetResponseNotFound(c, ErrMessageDataNotFound, err)
 	}
 
 	if errors.Is(err, ErrInternalServerError) {
-		logger.Error(ErrInternalServerError.Error(), err)
+		logger.LogWithCaller(ctx, ErrInternalServerError.Error(), err, 2)
 		return utils.SetResponseInternalServerError(c, ErrInternalServerError.Error(), err)
 	}
 
-	logger.Error(msg, err)
+	logger.LogWithCaller(ctx, msg, err, 2)
 	return utils.SetResponseBadRequest(c, msg, err)
 }

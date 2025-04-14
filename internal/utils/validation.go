@@ -5,9 +5,9 @@ import (
 	"go-boilerplate/internal/constanta"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var Validate *validator.Validate
@@ -97,8 +97,6 @@ func ValidatePassword(password string) bool {
 	return specialChar.MatchString(password)
 }
 
-
-func CheckPasswordHash(password, hash string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-    return err == nil
+func ValidateUpdatedAtRequest(request, dataDb time.Time) bool {
+	return request.Equal(dataDb)
 }

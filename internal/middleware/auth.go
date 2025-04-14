@@ -43,10 +43,12 @@ func GenerateTokenUserDashboard(user models.UserLogin) (string, error) {
 
 func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		ctx := utils.GetContext(c)
+
 		// Ambil header Authorization
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			logger.Error("Missing Authorization header", nil)
+			logger.Error(ctx, "Missing Authorization header", nil)
 			return utils.SetResponseUnauthorized(c, "Missing Authorization header", "")
 		}
 
@@ -57,7 +59,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		// Parse token JWT
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				logger.Error("Unexpected signing method", nil)
+				logger.Error(ctx, "Unexpected signing method", nil)
 				return nil, fiber.ErrUnauthorized
 			}
 			return []byte(secret), nil
@@ -75,7 +77,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		// Periksa token di Redis
 		isValid, err := IsTokenInRedis(c.Context(), tokenString)
 		if err != nil {
-			logger.Error("Failed to validate token in Redis", err)
+			logger.Error(ctx, "Failed to validate token in Redis", err)
 			return utils.SetResponseInternalServerError(c, "Failed to validate token", err)
 		}
 		if !isValid {
@@ -89,12 +91,22 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		}
 
 		// Konversi role_permissions ke []models.RolePermissions
-		c.Locals(constanta.AuthUserID, uint(claims["user_id"].(float64)))
-		c.Locals(constanta.AuthRoleID, uint(claims["role_id"].(float64)))
+		c.Locals(constanta.AuthUserID, int64(claims["user_id"].(float64)))
+		c.Locals(constanta.AuthRoleID, int64(claims["role_id"].(float64)))
 		c.Locals(constanta.AuthRoleName, claims["role_name"].(string))
 		c.Locals(constanta.AuthRoleCode, claims["role_code"].(string))
 		if claims["role_code"].(string) == constanta.RoleCodeAdmin || claims["role_code"].(string) == constanta.RoleCodeSuperAdmin {
 			c.Locals(constanta.IsAdmin, true)
+
+			CopyLocalsToContext(c,
+				constanta.Tx,
+				constanta.AuthUserID,
+				constanta.AuthRoleID,
+				constanta.AuthRoleName,
+				constanta.AuthRoleCode,
+				constanta.IsAdmin,
+				constanta.Scope,
+			)
 			return c.Next()
 		}
 
@@ -134,15 +146,28 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		// Simpan user_id dan scope ke context agar bisa digunakan di handler selanjutnya
 		c.Locals(constanta.IsAdmin, false)
 		c.Locals(constanta.Scope, scope)
+
+		CopyLocalsToContext(c,
+			constanta.Tx,
+			constanta.AuthUserID,
+			constanta.AuthRoleID,
+			constanta.AuthRoleName,
+			constanta.AuthRoleCode,
+			constanta.IsAdmin,
+			constanta.Scope,
+		)
+
 		return c.Next()
 	}
 }
 
 func CheckAdminRoleMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		ctx := utils.GetContext(c)
+
 		roleName := c.Locals(constanta.AuthRoleName)
 		if roleName == nil || (roleName != constanta.RoleCodeAdmin && roleName != constanta.RoleCodeSuperAdmin) {
-			logger.Error("User does not have admin role", nil)
+			logger.Error(ctx, "User does not have admin role", nil)
 			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
 		return c.Next()
@@ -211,8 +236,18 @@ func AuthMiddleware() fiber.Handler {
 
 		// Simpan informasi user ke context
 		claims := token.Claims.(jwt.MapClaims)
-		c.Locals("user_id", claims["user_id"])
-		c.Locals("role_id", claims["role_id"])
+		c.Locals(constanta.AuthUserID, int64(claims["user_id"].(float64)))
+		c.Locals(constanta.AuthRoleID, int64(claims["role_id"].(float64)))
+		c.Locals(constanta.AuthRoleName, claims["role_name"].(string))
+		c.Locals(constanta.AuthRoleCode, claims["role_code"].(string))
+
+		CopyLocalsToContext(c,
+			constanta.Tx,
+			constanta.AuthUserID,
+			constanta.AuthRoleID,
+			constanta.AuthRoleName,
+			constanta.AuthRoleCode,
+		)
 
 		return c.Next()
 	}

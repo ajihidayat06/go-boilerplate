@@ -1,6 +1,7 @@
 package request
 
 import (
+	"context"
 	"errors"
 	"go-boilerplate/pkg/logger"
 )
@@ -10,10 +11,10 @@ type ReqLogin struct {
 	Password        string `json:"password" validate:"required,min=8,max=20"`
 }
 
-func (r *ReqLogin) ValidateRequest() error {
+func (r *ReqLogin) ValidateRequest(ctx context.Context) error {
 	// Validasi input
 	if r.UsernameOrEmail == "" || r.Password == "" {
-		logger.Error("Login attempt with empty username or password", nil)
+		logger.Error(ctx, "Login attempt with empty username or password", nil)
 		return errors.New("Username and password are required")
 	}
 
@@ -29,11 +30,11 @@ type ReqToken struct {
 	TemporaryToken string `json:"temporary_token" validate:"required"`
 }
 
-func (r *ReqToken) ValidateRequest() error {
+func (r *ReqToken) ValidateRequest(ctx context.Context) error {
 	// Validasi input
 	if r.TemporaryToken == "" {
 		err := errors.New("Token are required")
-		logger.Error("temporary token nil", err)
+		logger.Error(ctx, "temporary token nil", err)
 		return err
 	}
 

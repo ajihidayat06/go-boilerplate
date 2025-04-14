@@ -19,21 +19,23 @@ func NewCategoryController(categoryUC usecase.CategoryUseCase) *CategoryDashboar
 }
 
 func (ctrl *CategoryDashboardController) CreateCategory(c *fiber.Ctx) error {
+    ctx := utils.GetContext(c)
+
     var reqCategory request.ReqCategory
     if err := c.BodyParser(&reqCategory); err != nil {
-        logger.Error("Failed to parse request body", err)
+        logger.Error(ctx, "Failed to parse request body", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
     ok, errMsg := utils.ValidateRequest(reqCategory, request.ReqCategoryErrorMessage)
     if !ok {
         err := fmt.Errorf("%s", errMsg)
-        logger.Error("error validate request ", err)
+        logger.Error(ctx, "error validate request ", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
-    if err := ctrl.CategoryUseCase.CreateCategory(c.Context(), &reqCategory); err != nil {
-        logger.Error("Failed to create category", err)
+    if err := ctrl.CategoryUseCase.CreateCategory(ctx, &reqCategory); err != nil {
+        logger.Error(ctx, "Failed to create category", err)
         return utils.SetResponseBadRequest(c, "Failed to create category", err)
     }
 
@@ -41,15 +43,17 @@ func (ctrl *CategoryDashboardController) CreateCategory(c *fiber.Ctx) error {
 }
 
 func (ctrl *CategoryDashboardController) GetCategoryByID(c *fiber.Ctx) error {
+    ctx := utils.GetContext(c)
+
     id, err := utils.ReadRequestParamID(c)
     if err != nil {
-        logger.Error("Failed get param id", err)
+        logger.Error(ctx, "Failed get param id", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
-    response, err := ctrl.CategoryUseCase.GetCategoryByID(c.Context(), id)
+    response, err := ctrl.CategoryUseCase.GetCategoryByID(ctx, id)
     if err != nil {
-        logger.Error("Failed get category", err)
+        logger.Error(ctx, "Failed get category", err)
         return utils.SetResponseBadRequest(c, "Failed get category", err)
     }
 
@@ -57,9 +61,10 @@ func (ctrl *CategoryDashboardController) GetCategoryByID(c *fiber.Ctx) error {
 }
 
 func (ctrl *CategoryDashboardController) GetListCategory(c *fiber.Ctx) error {
-    response, err := ctrl.CategoryUseCase.GetListCategory(c.Context())
+ctx := utils.GetContext(c)
+    response, err := ctrl.CategoryUseCase.GetListCategory(ctx)
     if err != nil {
-        logger.Error("Failed get list category", err)
+        logger.Error(ctx, "Failed get list category", err)
         return utils.SetResponseBadRequest(c, "Failed get list category", err)
     }
 
@@ -67,29 +72,30 @@ func (ctrl *CategoryDashboardController) GetListCategory(c *fiber.Ctx) error {
 }
 
 func (ctrl *CategoryDashboardController) UpdateCategoryByID(c *fiber.Ctx) error {
+ctx := utils.GetContext(c)
     id, err := utils.ReadRequestParamID(c)
     if err != nil {
-        logger.Error("Failed get param id", err)
+        logger.Error(ctx, "Failed get param id", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
     reqUpdate := request.ReqCategoryUpdate{}
     reqUpdate.ID = id
     if err := c.BodyParser(&reqUpdate); err != nil {
-        logger.Error("Failed to parse request body", err)
+        logger.Error(ctx, "Failed to parse request body", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
     ok, errMsg := utils.ValidateRequest(reqUpdate, request.ReqCategoryUpdateErrorMessage)
     if !ok {
         err := fmt.Errorf("%s", errMsg)
-        logger.Error("error validate request ", err)
+        logger.Error(ctx, "error validate request ", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
-    response, err := ctrl.CategoryUseCase.UpdateCategoryByID(c.Context(), &reqUpdate)
+    response, err := ctrl.CategoryUseCase.UpdateCategoryByID(ctx, &reqUpdate)
     if err != nil {
-        logger.Error("Failed update category", err)
+        logger.Error(ctx, "Failed update category", err)
         return utils.SetResponseBadRequest(c, "Failed update category", err)
     }
 
@@ -97,21 +103,22 @@ func (ctrl *CategoryDashboardController) UpdateCategoryByID(c *fiber.Ctx) error 
 }
 
 func (ctrl *CategoryDashboardController) DeleteCategoryByID(c *fiber.Ctx) error {
+ctx := utils.GetContext(c)
     id, err := utils.ReadRequestParamID(c)
     if err != nil {
-        logger.Error("Failed get param id", err)
+        logger.Error(ctx, "Failed get param id", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
     reqData := request.AbstractRequest{}
     if err := c.BodyParser(&reqData); err != nil {
-        logger.Error("Failed to parse request body", err)
+        logger.Error(ctx, "Failed to parse request body", err)
         return utils.SetResponseBadRequest(c, "Invalid request", err)
     }
 
-    err = ctrl.CategoryUseCase.DeleteCategoryByID(c.Context(), id, reqData.UpdatedAt)
+    err = ctrl.CategoryUseCase.DeleteCategoryByID(ctx, id, reqData.UpdatedAt)
     if err != nil {
-        logger.Error("Failed delete category", err)
+        logger.Error(ctx, "Failed delete category", err)
         return utils.SetResponseBadRequest(c, "Failed delete category", err)
     }
 

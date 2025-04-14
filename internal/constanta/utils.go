@@ -1,7 +1,15 @@
 package constanta
 
-type contextKey string
+type ContextKey string
 
 const (
-	Tx contextKey = "tx"
+	Tx           ContextKey = "tx"
+	AuthUserID   ContextKey = "user_id"
+	AuthRoleID   ContextKey = "role_id"
+	AuthRoleName ContextKey = "role_name"
+	AuthRoleCode ContextKey = "role_code"
+	IsAdmin      ContextKey = "is_admin"
+	Scope        ContextKey = "scope"
+	TraceID      ContextKey = "trace_id"
+	RequestID    ContextKey = "request_id"
 )

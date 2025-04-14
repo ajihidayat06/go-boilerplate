@@ -38,7 +38,7 @@ func (uc *categoryUseCase) CreateCategory(ctx context.Context, req *request.ReqC
     return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
         err := uc.categoryRepo.Create(ctx, &category)
         if err != nil {
-            logger.Error("Failed to create category", err)
+            logger.Error(ctx, "Failed to create category", err)
             return err
         }
         return nil
@@ -66,7 +66,7 @@ func (uc *categoryUseCase) UpdateCategoryByID(ctx context.Context, req *request.
     err = processWithTx(ctx, uc.db, func(ctx context.Context) error {
         res, err = uc.categoryRepo.UpdateCategoryByID(ctx, req.ID, req.UpdatedAt, category)
         if err != nil {
-            logger.Error("Failed to update category", err)
+            logger.Error(ctx, "Failed to update category", err)
 			return err
 		}
 
@@ -84,7 +84,7 @@ func (uc *categoryUseCase) DeleteCategoryByID(ctx context.Context, id int64, upd
     return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
         err := uc.categoryRepo.DeleteCategoryByID(ctx, id, updatedAt)
         if err != nil {
-            logger.Error("Failed to delete category", err)
+            logger.Error(ctx, "Failed to delete category", err)
             return err
         }
         return nil

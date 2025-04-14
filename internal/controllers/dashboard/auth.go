@@ -25,6 +25,8 @@ func NewAuthController(
 }
 
 func (ctrl *AuthController) LogoutDashboard(c *fiber.Ctx) error {
+	ctx := utils.GetContext(c)
+
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
 		return utils.SetResponseBadRequest(c, "Missing Authorization header", nil)
@@ -33,9 +35,9 @@ func (ctrl *AuthController) LogoutDashboard(c *fiber.Ctx) error {
 	tokenString := utils.ExtractBearerToken(authHeader)
 
 	// Hapus token dari Redis
-	err := middleware.DeleteTokenFromRedis(c.Context(), tokenString)
+	err := middleware.DeleteTokenFromRedis(ctx, tokenString)
 	if err != nil {
-		logger.Error("Failed to delete token from Redis", err)
+		logger.Error(ctx, "Failed to delete token from Redis", err)
 		return utils.SetResponseInternalServerError(c, "Failed to logout", err)
 	}
 
@@ -43,28 +45,30 @@ func (ctrl *AuthController) LogoutDashboard(c *fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
+	ctx := utils.GetContext(c)
+
 	var reqLogin request.ReqLogin
 	if err := c.BodyParser(&reqLogin); err != nil {
-		logger.Error("Failed to parse login request", err)
+		logger.Error(ctx, "Failed to parse login request", err)
 		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
-	err := reqLogin.ValidateRequest()
+	err := reqLogin.ValidateRequest(ctx)
 	if err != nil {
 		return utils.SetResponseBadRequest(c, "Invalid username or password", err)
 	}
 
 	// Validasi kredensial
-	user, err := ctrl.AuthUsecase.LoginDashboard(c.Context(), &reqLogin)
+	user, err := ctrl.AuthUsecase.LoginDashboard(ctx, &reqLogin)
 	if err != nil {
-		logger.Error("error LoginDashboard", err)
+		logger.Error(ctx, "error LoginDashboard", err)
 		return utils.SetResponseBadRequest(c, "Login Failed, Invalid username or password", err)
 	}
 
 	// Generate temporary token
 	temporaryToken, err := middleware.GenerateTemporaryToken(user)
 	if err != nil {
-		logger.Error("Failed to generate temporary token", err)
+		logger.Error(ctx, "Failed to generate temporary token", err)
 		return utils.SetResponseInternalServerError(c, "Failed generate token", err)
 	}
 
@@ -72,16 +76,18 @@ func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
+	ctx := utils.GetContext(c)
+
 	var (
 		reqToken request.ReqToken
 		err      error
 	)
 	if err = c.BodyParser(&reqToken); err != nil {
-		logger.Error("Failed to parse token request", err)
+		logger.Error(ctx, "Failed to parse token request", err)
 		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
-	err = reqToken.ValidateRequest()
+	err = reqToken.ValidateRequest(ctx)
 	if err != nil {
 		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
@@ -89,20 +95,20 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	// Validasi temporary token
 	user, err := middleware.ValidateTemporaryToken(reqToken.TemporaryToken)
 	if err != nil {
-		logger.Error("Invalid temporary token", err)
+		logger.Error(ctx, "Invalid temporary token", err)
 		return utils.SetResponseUnauthorized(c, "Invalid or expired temporary token", err.Error())
 	}
 
 	// Generate access token
-	user, err = ctrl.AuthUsecase.LoginByUserId(c.Context(), user.ID)
+	user, err = ctrl.AuthUsecase.LoginByUserId(ctx, user.ID)
 	if err != nil {
-		logger.Error("Error GetUserByID", err)
+		logger.Error(ctx, "Error GetUserByID", err)
 		return utils.SetResponseUnauthorized(c, errorutils.ErrMessageDataNotFound, err.Error())
 	}
 
 	accessToken, err := middleware.GenerateTokenUserDashboard(user)
 	if err != nil {
-		logger.Error("Failed to generate access token", err)
+		logger.Error(ctx, "Failed to generate access token", err)
 		return utils.SetResponseInternalServerError(c, "Failed to generate access token", err)
 	}
 
@@ -111,9 +117,9 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	_, _, _ = new(jwt.Parser).ParseUnverified(accessToken, claims)
 	exp := time.Unix(int64(claims["exp"].(float64)), 0)
 
-	err = middleware.SaveTokenToRedis(c.Context(), accessToken, exp)
+	err = middleware.SaveTokenToRedis(ctx, accessToken, exp)
 	if err != nil {
-		logger.Error("Failed to save access token to Redis", err)
+		logger.Error(ctx, "Failed to save access token to Redis", err)
 		return utils.SetResponseInternalServerError(c, "Failed to save access token", err)
 	}
 

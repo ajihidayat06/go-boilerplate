@@ -9,6 +9,7 @@ import (
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/internal/utils/errorutils"
 	"go-boilerplate/pkg/logger"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -16,16 +17,17 @@ import (
 type UserUseCase interface {
 	Register(ctx context.Context, reqUser *request.ReqUser) error
 	Login(ctx context.Context, req *request.ReqLogin) (models.UserLogin, error)
-	GetUserByID(ctx context.Context, user int64) (models.User, error)
+	GetUserByID(ctx context.Context, user int64) (response.UserResponse, error)
 	CreateUserDashboard(ctx context.Context, user *request.ReqUser) error
 	GetListUser(ctx context.Context, listStruct *models.GetListStruct) (response.ListResponse[response.UserResponse], error)
-	UpdateUserByID(ctx context.Context, user *request.ReqUserUpdate) (models.User, error)
+	UpdateUserByID(ctx context.Context, user *request.ReqUserUpdate) (response.UserResponse, error)
 	DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error
 }
 
 type userUseCase struct {
 	db       *gorm.DB
 	UserRepo repo.UserRepository
+	RoleRepo repo.RoleRepository
 }
 
 func NewUserUseCase(db *gorm.DB, userRepo repo.UserRepository) UserUseCase {
@@ -40,7 +42,7 @@ func (u *userUseCase) Register(ctx context.Context, reqUser *request.ReqUser) er
 	return processWithTx(ctx, u.db, func(ctx context.Context) error {
 		err := u.UserRepo.Create(ctx, &user)
 		if err != nil {
-			logger.Error("Failed to create user", err)
+			logger.Error(ctx, "Failed to create user", err)
 			return err
 		}
 		return nil
@@ -53,29 +55,54 @@ func (u userUseCase) Login(ctx context.Context, req *request.ReqLogin) (models.U
 	return user, nil
 }
 
-func (u *userUseCase) GetUserByID(ctx context.Context, id int64) (models.User, error) {
-	return u.UserRepo.GetUserByID(ctx, id)
+func (u *userUseCase) GetUserByID(ctx context.Context, id int64) (response.UserResponse, error) {
+	userDb, err := u.UserRepo.GetUserByID(ctx, id)
+	if err != nil {
+		logger.Error(ctx, "Failed to get user by id", err)
+		return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
+	}
+
+	return response.SetUserResponse(userDb), nil
 }
 
 func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.ReqUser) error {
-	// Map request user to model user
 	err := reqUser.ValidateRequestCreate()
 	if err != nil {
 		return err
 	}
 
+	var roleDb models.Roles
+	if reqUser.RoleID != 0 {
+		roleDb, err = u.getDataRole(ctx, reqUser.RoleID)
+		if err != nil {
+			return err
+		}
+	}
+
+	userLogin, err := utils.GetUserIDFromCtx(ctx)
+	if err != nil {
+		logger.Error(ctx, "Failed to get user id from context", err)
+		return errorutils.ErrDataNotFound
+	}
+
 	user := models.User{
-		Name:     reqUser.Name,
-		Email:    reqUser.Email,
-		Username: reqUser.Username,
-		Password: reqUser.Password,
+		Name:      reqUser.Name,
+		Email:     reqUser.Email,
+		Username:  reqUser.Username,
+		Password:  reqUser.Password,
+		RoleID:    reqUser.RoleID,
+		Roles:     &roleDb,
+		CreatedAt: time.Now(),
+		CreatedBy: userLogin,
+		UpdatedAt: time.Now(),
+		UpdatedBy: userLogin,
 	}
 
 	return processWithTx(ctx, u.db, func(ctx context.Context) error {
 		err := u.UserRepo.Create(ctx, &user)
 		if err != nil {
-			logger.Error("Failed to create user dashboard", err)
-			return errorutils.HandleRepoError(err)
+			logger.Error(ctx, "Failed to create user dashboard", err)
+			return errorutils.HandleRepoError(ctx, err)
 		}
 		return nil
 	})
@@ -84,38 +111,78 @@ func (u *userUseCase) CreateUserDashboard(ctx context.Context, reqUser *request.
 func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetListStruct) (response.ListResponse[response.UserResponse], error) {
 	userDb, count, err := u.UserRepo.GetListUser(ctx, listStruct)
 	if err != nil {
-		logger.Error("Failed to get list user", err)
-		return response.ListResponse[response.UserResponse]{}, err
+		logger.Error(ctx, "Failed to get list user", err)
+		return response.ListResponse[response.UserResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
 	listResponse := utils.MapToListResponse(response.SetResponseListUser(userDb), count, listStruct.Page, listStruct.Limit)
 	return listResponse, nil
 }
 
-func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUserUpdate) (models.User, error) {
+func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUserUpdate) (response.UserResponse, error) {
 	err := reqData.ValidateRequestUpdate()
 	if err != nil {
-		return models.User{}, err
+		return response.UserResponse{}, err
 	}
 
-	// TODO: Mapping request user ke model user
+	userDb, err := u.UserRepo.GetUserByID(ctx, reqData.ID)
+	if err != nil {
+		return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
+	}
+
+	if userDb.ID == 0 {
+		return response.UserResponse{}, errorutils.ErrDataNotFound
+	}
+
+	if !utils.ValidateUpdatedAtRequest(reqData.UpdatedAt, userDb.UpdatedAt) {
+		return response.UserResponse{}, errorutils.ErrDataDataUpdated
+	}
+
+	var roleDb models.Roles
+	if reqData.RoleID != 0 {
+		roleDb, err = u.getDataRole(ctx, reqData.RoleID)
+		if err != nil {
+			return response.UserResponse{}, err
+		}
+	}
+
+	userLogin, err := utils.GetUserIDFromCtx(ctx)
+	if err != nil {
+		logger.Error(ctx, "Failed to get user id from context", err)
+		return response.UserResponse{}, errorutils.ErrDataNotFound
+	}
+
+	userUpdate := models.User{
+		ID:        userDb.ID,
+		Name:      reqData.Name,
+		Email:     reqData.Email,
+		Username:  reqData.Username,
+		Password:  reqData.Password,
+		RoleID:    reqData.RoleID,
+		Roles:     &roleDb,
+		CreatedAt: userDb.CreatedAt,
+		CreatedBy: userDb.CreatedBy,
+		UpdatedAt: time.Now(),
+		UpdatedBy: userLogin,
+	}
+
 	var (
 		res models.User
 	)
 	err = processWithTx(ctx, u.db, func(ctx context.Context) error {
-		res, err = u.UserRepo.UpdateUserByID(ctx, *reqData, models.User{})
+		res, err = u.UserRepo.UpdateUserByID(ctx, *reqData, userUpdate)
 		if err != nil {
-			logger.Error("Failed to update user", err)
+			logger.Error(ctx, "Failed to update user", err)
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
-		return models.User{}, err
+		return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	return res, nil
+	return response.SetUserResponse(res), nil
 }
 
 func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData request.AbstractRequest) error {
@@ -124,12 +191,36 @@ func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData requ
 		return err
 	}
 
+	userDb, err := u.UserRepo.GetUserByID(ctx, id)
+	if err != nil {
+		return errorutils.HandleRepoError(ctx, err)
+	}
+
+	if userDb.ID == 0 {
+		return errorutils.ErrDataNotFound
+	}
+
+	if !utils.ValidateUpdatedAtRequest(reqData.UpdatedAt, userDb.UpdatedAt) {
+		return errorutils.ErrDataDataUpdated
+	}
+
 	return processWithTx(ctx, u.db, func(ctx context.Context) error {
 		err := u.UserRepo.DeleteUserByID(ctx, id, reqData.UpdatedAt)
 		if err != nil {
-			logger.Error("Failed to delete user", err)
-			return err
+			logger.Error(ctx, "Failed to delete user", err)
+			return errorutils.HandleRepoError(ctx, err)
 		}
 		return nil
 	})
+}
+
+func (u *userUseCase) getDataRole(ctx context.Context, roleID int64) (res models.Roles, err error) {
+	if roleID != 0 {
+		res, err = u.RoleRepo.GetRoleByID(ctx, roleID)
+		if err != nil {
+			logger.Error(ctx, "Failed to get role by id", err)
+			return models.Roles{}, errorutils.HandleRepoError(ctx, err)
+		}
+	}
+	return
 }

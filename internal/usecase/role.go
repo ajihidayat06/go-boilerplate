@@ -43,7 +43,7 @@ func (uc *roleUseCase) CreateRole(ctx context.Context, req *request.ReqRoles) er
 	return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
         err := uc.roleRepo.Create(ctx, &role)
         if err != nil {
-			logger.Error("Failed to create role", err)
+			logger.Error(ctx, "Failed to create role", err)
             return err
         }
         return nil
@@ -74,7 +74,7 @@ func (uc *roleUseCase) UpdateRoleByID(ctx context.Context, req *request.ReqRoleU
 	
 		updatedRole, err = uc.roleRepo.UpdateRoleByID(ctx, req.ID, req.UpdatedAt, role)
 		if err != nil {
-			logger.Error("Failed to update role", err)
+			logger.Error(ctx, "Failed to update role", err)
 			return err
 		}
 	
@@ -88,7 +88,7 @@ func (uc *roleUseCase) DeleteRoleByID(ctx context.Context, id int64, updatedAt t
 	return processWithTx(ctx,  uc.db, func(ctx context.Context) error {
         err := uc.roleRepo.DeleteRoleByID(ctx, id, updatedAt)
         if err != nil {
-			logger.Error("Failed to delete role", err)
+			logger.Error(ctx, "Failed to delete role", err)
             return err
         }
         return nil

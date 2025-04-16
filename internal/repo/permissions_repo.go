@@ -14,6 +14,7 @@ type PermissionsRepository interface {
 	GetListPermissions(ctx context.Context) ([]models.Permissions, error)
 	UpdatePermissionsByID(ctx context.Context, id int64, updatedAt time.Time, permissions models.Permissions) (models.Permissions, error)
 	DeletePermissionsByID(ctx context.Context, id int64, updatedAt time.Time) error
+	GetPermissionsByListID(ctx context.Context, ids []int64) ([]models.Permissions, error)
 }
 
 type permissionsRepository struct {
@@ -67,10 +68,26 @@ func (r *permissionsRepository) DeletePermissionsByID(ctx context.Context, id in
 	db := r.getDB(ctx)
 
 	err := db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
 		Where("id = ? AND updated_at = ?", id, updatedAt).
 		Delete(&models.Permissions{}).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *permissionsRepository) GetPermissionsByListID(ctx context.Context, ids []int64) ([]models.Permissions, error) {
+	var permissions []models.Permissions
+
+	err := r.db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
+		Where("id IN ?", ids).
+		Find(&permissions).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
 }

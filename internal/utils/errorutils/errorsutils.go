@@ -22,6 +22,7 @@ const (
 	ErrMessaageDataAlreadyExists    = "data sudah ada"
 	ErrMessaageDataRequired         = "data tidak boleh kosong"
 	ErrMessageUserNotLogin          = "silahkan login terlebih dahulu"
+	ErrMessageInternalServerError   = "terjadi kesalahan pada server, silahkan hubungi admin"
 )
 
 var (
@@ -74,7 +75,7 @@ func HandleRepoError(ctx context.Context, err error) error {
 	}
 
 	logger.LogWithCaller(ctx, ErrInternalServerError.Error(), err, 2)
-	return fmt.Errorf(`%s : %s`, ErrInternalServerError.Error(), err.Error())
+	return ErrInternalServerError
 }
 
 func HandleUsecaseError(c *fiber.Ctx, err error, msg string) error {
@@ -87,7 +88,7 @@ func HandleUsecaseError(c *fiber.Ctx, err error, msg string) error {
 
 	if errors.Is(err, ErrInternalServerError) {
 		logger.LogWithCaller(ctx, ErrInternalServerError.Error(), err, 2)
-		return utils.SetResponseInternalServerError(c, ErrInternalServerError.Error(), err)
+		return utils.SetResponseInternalServerError(c, ErrMessageInternalServerError, err)
 	}
 
 	logger.LogWithCaller(ctx, msg, err, 2)

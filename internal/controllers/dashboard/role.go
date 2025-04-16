@@ -95,8 +95,7 @@ func (ctrl *RoleController) UpdateRoleByID(c *fiber.Ctx) error {
 
 	response, err := ctrl.RoleUseCase.UpdateRoleByID(ctx, &reqUpdate)
 	if err != nil {
-		logger.Error(ctx, "Failed update role", err)
-		return utils.SetResponseBadRequest(c, "Failed update role", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed update role")
 	}
 
 	return utils.SetResponseOK(c, "success update role", response)
@@ -119,8 +118,7 @@ func (ctrl *RoleController) DeleteRoleByID(c *fiber.Ctx) error {
 
 	err = ctrl.RoleUseCase.DeleteRoleByID(ctx, id, reqData)
 	if err != nil {
-		logger.Error(ctx, "Failed delete role", err)
-		return utils.SetResponseBadRequest(c, "Failed delete role", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed delete role")
 	}
 
 	return utils.SetResponseOK(c, "success delete role", nil)

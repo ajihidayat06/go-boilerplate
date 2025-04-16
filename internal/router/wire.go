@@ -11,7 +11,8 @@ import (
 
 func InitUser(db *gorm.DB) *controllers.UserController {
 	userRepo := repo.NewUserRepository(db)
-	userUC := usecase.NewUserUseCase(db, userRepo)
+	roleRepo := repo.NewRoleRepository(db)
+	userUC := usecase.NewUserUseCase(db, userRepo, roleRepo)
 	userController := controllers.NewUserController(userUC)
 
 	return userController
@@ -27,7 +28,8 @@ func InitAuth(db *gorm.DB) *dashboard.AuthController {
 
 func InitUserDahboard(db *gorm.DB) *dashboard.UserDahboardController {
 	userRepo := repo.NewUserRepository(db)
-	userDashboardUC := usecase.NewUserUseCase(db, userRepo)
+	roleRepo := repo.NewRoleRepository(db)
+	userDashboardUC := usecase.NewUserUseCase(db, userRepo, roleRepo)
 	userDashboardController := dashboard.NewUserDashboardController(userDashboardUC)
 
 	return userDashboardController

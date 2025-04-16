@@ -10,7 +10,9 @@ import (
 )
 
 type AbstractRepo struct {
-	db *gorm.DB
+	db          *gorm.DB
+	FilterAlias map[string]string
+	Joins       map[string]string
 }
 
 func (a *AbstractRepo) getDB(ctx context.Context) *gorm.DB {
@@ -47,6 +49,11 @@ func (a *AbstractRepo) applyFilters(filters map[string][2]interface{}) func(*gor
 		for key, val := range filters {
 			operator := val[0].(string)
 			value := val[1]
+
+			alias, ok := a.FilterAlias[key]
+			if ok {
+				key = alias
+			} // Simpan alias filter
 
 			// Jika operatornya IN, kita harus memastikan value bisa digunakan dalam IN
 			if operator == "IN" {
@@ -89,5 +96,19 @@ func (a *AbstractRepo) filterByRole(role string, userID int64) func(*gorm.DB) *g
 			return db // Admin bisa akses semua
 		}
 		return db.Where("created_by = ?", userID)
+	}
+}
+
+func (a *AbstractRepo) applyJoins(params *models.GetListStruct) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		for k, _ := range params.Filters {
+			joinStr, ok := a.Joins[k]
+			if ok {
+				// Jika ada join yang sesuai dengan filter, kita tambahkan join tersebut
+				db = db.Joins(joinStr)
+			}
+		}
+
+		return db
 	}
 }

@@ -75,12 +75,12 @@ func (r *roleRepository) GetListRole(ctx context.Context, listStruct *models.Get
 }
 
 func (r *roleRepository) UpdateRoleByID(ctx context.Context, id int64, updatedAt time.Time, role models.Roles) (models.Roles, error) {
-	db := r.getDB(ctx) // Gunakan DB dari context jika ada transaksi
+	db := r.getDB(ctx)
 
 	err := db.WithContext(ctx).
 		Model(&role).
 		Where("id = ? AND updated_at = ?", id, updatedAt).
-		Updates(role).Error
+		Save(&role).Error
 	if err != nil {
 		return models.Roles{}, err
 	}

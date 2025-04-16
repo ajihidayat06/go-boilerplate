@@ -83,6 +83,72 @@ INSERT INTO permissions (code, name, group_menu, action, created_by, updated_by)
 ('role_permissions:update', 'Permission to update role permissions data (role_permissions-update)', 'role_permissions', 'update', 1, 1),
 ('role_permissions:delete', 'Permission to delete role permissions data (role_permissions-delete)', 'role_permissions', 'delete', 1, 1);
 
+
+CREATE TABLE IF NOT EXISTS categories (
+    id bigserial NOT NULL,
+    name VARCHAR NOT NULL,
+    code VARCHAR NOT NULL,
+    slug VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER,
+    CONSTRAINT categories_pkey PRIMARY KEY (id)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_code ON categories(code);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+
+CREATE TABLE IF NOT EXISTS product (
+    id bigserial NOT NULL,
+    name VARCHAR NOT NULL,
+    code VARCHAR NOT NULL UNIQUE,         
+    barcode VARCHAR UNIQUE,               -- Barcode scanner support
+    description TEXT,
+    brand VARCHAR,
+    unit VARCHAR DEFAULT 'pcs',
+    price NUMERIC(12, 2) NOT NULL,        -- Harga jual
+    cost_price NUMERIC(12, 2),            -- Harga modal
+    discount NUMERIC(5, 2) DEFAULT 0.00,  -- Diskon default (%)
+    is_active BOOLEAN DEFAULT TRUE,
+    has_varian BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER,
+    CONSTRAINT product_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS product_categories (
+    id bigserial NOT NULL,
+    product_id INTEGER NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    categories_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER,
+    CONSTRAINT product_categories_pkey PRIMARY KEY (id),
+    UNIQUE (product_id, categories_id)
+);
+
+CREATE TABLE IF NOT EXISTS product_varian (
+    id bigserial NOT NULL,
+    product_id INTEGER NOT NULL REFERENCES product(id) ON DELETE CASCADE,
+    name VARCHAR NOT NULL,
+    code VARCHAR NOT NULL UNIQUE,         -- Kode varian
+    barcode VARCHAR UNIQUE,               -- Barcode scanner support
+    price NUMERIC(12, 2) NOT NULL,        -- Harga jual
+    cost_price NUMERIC(12, 2),            -- Harga modal
+    discount NUMERIC(5, 2) DEFAULT 0.00,  -- Diskon default (%)
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER,
+    CONSTRAINT product_varian_pkey PRIMARY KEY (id)
+);
+
 -- +migrate Down
 DROP TABLE IF EXISTS role_permissions;
 DROP TABLE IF EXISTS permissions;

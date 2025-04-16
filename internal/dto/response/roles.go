@@ -6,13 +6,13 @@ import (
 )
 
 type RolesResponse struct {
-	ID          int64                     `json:"id"`
-	Code        string                    `json:"code"`
-	Name        string                    `json:"name"`
-	CreatedAt   time.Time                 `json:"created_at"`
-	CreatedBy   int64                     `json:"created_by"`
-	UpdatedAt   time.Time                 `json:"updated_at"`
-	UpdatedBy   int64                     `json:"updated_by"`
+	ID              int64                     `json:"id"`
+	Code            string                    `json:"code"`
+	Name            string                    `json:"name"`
+	CreatedAt       time.Time                 `json:"created_at"`
+	CreatedBy       int64                     `json:"created_by"`
+	UpdatedAt       time.Time                 `json:"updated_at"`
+	UpdatedBy       int64                     `json:"updated_by"`
 	RolePermissions []RolePermissionsResponse `json:"role_permissions"`
 }
 
@@ -39,27 +39,34 @@ func SetListResponseRole(user []models.Roles) []RolesResponse {
 func SetRoleDetailResponse(role models.Roles) RolesResponse {
 	var rolePermissions []RolePermissionsResponse
 	for _, rolePermission := range *role.RolePermissions {
+		var permissions *PermissionsResponse
+		if rolePermission.Permissions == nil {
+			permissions = nil
+		} else {
+			permissions = SetPermissionsRespons(*rolePermission.Permissions)
+		}
+
 		rp := RolePermissionsResponse{
-			ID:            rolePermission.ID,
-			RoleID:        rolePermission.RoleID,
-			PermissionsID: rolePermission.PermissionsID,
-			AccessScope:   rolePermission.AccessScope,
-			CreatedAt:     rolePermission.CreatedAt,
-			UpdatedAt:     rolePermission.UpdatedAt,
-			CreatedBy:     rolePermission.CreatedBy,
-			UpdatedBy:     rolePermission.UpdatedBy,
-			Permissions:   SetPermissionsRespons(*rolePermission.Permissions),
+			ID:           rolePermission.ID,
+			RoleID:       rolePermission.RoleID,
+			PermissionID: rolePermission.PermissionsID,
+			Scope:        rolePermission.AccessScope,
+			CreatedAt:    rolePermission.CreatedAt,
+			UpdatedAt:    rolePermission.UpdatedAt,
+			CreatedBy:    rolePermission.CreatedBy,
+			UpdatedBy:    rolePermission.UpdatedBy,
+			Permissions:  permissions,
 		}
 		rolePermissions = append(rolePermissions, rp)
 	}
 	return RolesResponse{
-		ID:             role.ID,
-		Name:           role.Name,
-		Code:           role.Code,
-		CreatedAt:      role.CreatedAt,
-		UpdatedAt:      role.UpdatedAt,
-		CreatedBy:      role.CreatedBy,
-		UpdatedBy:      role.UpdatedBy,
+		ID:              role.ID,
+		Name:            role.Name,
+		Code:            role.Code,
+		CreatedAt:       role.CreatedAt,
+		UpdatedAt:       role.UpdatedAt,
+		CreatedBy:       role.CreatedBy,
+		UpdatedBy:       role.UpdatedBy,
 		RolePermissions: rolePermissions,
 	}
 }

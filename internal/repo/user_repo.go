@@ -34,7 +34,6 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 	db := r.getDB(ctx)
 
 	err := db.WithContext(ctx).
-		Scopes().
 		Create(user).Error
 	if err != nil {
 		return err

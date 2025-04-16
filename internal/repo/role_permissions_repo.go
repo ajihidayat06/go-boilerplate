@@ -15,6 +15,7 @@ type RolePermissionsRepository interface {
 	UpdateRolePermissionsByID(ctx context.Context, id int64, updatedAt time.Time, rolePermission models.RolePermissions) (models.RolePermissions, error)
 	DeleteRolePermissionsByID(ctx context.Context, id int64, updatedAt time.Time) error
 	DeleteRolePermissionsByRoleID(ctx context.Context, roleID int64) error
+	UpdateRolePermissionsBulk(ctx context.Context, rolePermission []models.RolePermissions) ([]models.RolePermissions, error)
 }
 
 type rolePermissionsRepository struct {
@@ -92,4 +93,16 @@ func (r *rolePermissionsRepository) DeleteRolePermissionsByRoleID(ctx context.Co
 		return err
 	}
 	return nil
+}
+
+func (r *rolePermissionsRepository) UpdateRolePermissionsBulk(ctx context.Context, rolePermission []models.RolePermissions) ([]models.RolePermissions, error) {
+	db := r.getDB(ctx)
+
+	err := db.WithContext(ctx).
+		Scopes(r.withCheckScope(ctx)).
+		Save(&rolePermission).Error
+	if err != nil {
+		return []models.RolePermissions{}, err
+	}
+	return rolePermission, nil
 }

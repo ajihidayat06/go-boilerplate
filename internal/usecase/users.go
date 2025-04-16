@@ -32,10 +32,11 @@ type userUseCase struct {
 	RoleRepo repo.RoleRepository
 }
 
-func NewUserUseCase(db *gorm.DB, userRepo repo.UserRepository) UserUseCase {
+func NewUserUseCase(db *gorm.DB, userRepo repo.UserRepository, roleRepo repo.RoleRepository) UserUseCase {
 	return &userUseCase{
 		db:       db,
 		UserRepo: userRepo,
+		RoleRepo: roleRepo,
 	}
 }
 
@@ -164,7 +165,7 @@ func (u *userUseCase) UpdateUserByID(ctx context.Context, reqData *request.ReqUs
 	if reqData.RoleID != 0 {
 		roleDb, err = u.getDataRole(ctx, reqData.RoleID)
 		if err != nil {
-			return response.UserResponse{}, err
+			return response.UserResponse{}, errorutils.HandleRepoError(ctx, err)
 		}
 	}
 
@@ -229,7 +230,6 @@ func (u *userUseCase) DeleteUserByID(ctx context.Context, id int64, reqData requ
 	return processWithTx(ctx, u.db, func(ctx context.Context) error {
 		err := u.UserRepo.DeleteUserByID(ctx, id, reqData.UpdatedAt)
 		if err != nil {
-			logger.Error(ctx, "Failed to delete user", err)
 			return errorutils.HandleRepoError(ctx, err)
 		}
 		return nil

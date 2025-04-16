@@ -9,10 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type AbstractRepoInf interface {
+	GetFilterAvailable() []string
+	GetConstraintErr() map[string]string
+}
+
 type AbstractRepo struct {
-	db          *gorm.DB
-	FilterAlias map[string]string
-	Joins       map[string]string
+	db              *gorm.DB
+	FilterAlias     map[string]string
+	Joins           map[string]string
+	ConstraintError map[string]string
 }
 
 func (a *AbstractRepo) getDB(ctx context.Context) *gorm.DB {
@@ -101,7 +107,7 @@ func (a *AbstractRepo) filterByRole(role string, userID int64) func(*gorm.DB) *g
 
 func (a *AbstractRepo) applyJoins(params *models.GetListStruct) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		for k, _ := range params.Filters {
+		for k := range params.Filters {
 			joinStr, ok := a.Joins[k]
 			if ok {
 				// Jika ada join yang sesuai dengan filter, kita tambahkan join tersebut
@@ -111,4 +117,30 @@ func (a *AbstractRepo) applyJoins(params *models.GetListStruct) func(*gorm.DB) *
 
 		return db
 	}
+}
+
+func (r *AbstractRepo) GetFilterAvailable() []string {
+	filters := []string{}
+	for key := range r.FilterAlias {
+		filters = append(filters, key)
+	}
+	return filters
+}
+
+func GetFilterAvailableFromRepo(repo interface{}) []string {
+	if r, ok := repo.(AbstractRepoInf); ok {
+		return r.GetFilterAvailable()
+	}
+	return []string{}
+}
+
+func (r *AbstractRepo) GetConstraintErr() map[string]string {
+	return r.ConstraintError
+}
+
+func GetContraintErrMessage(repo interface{}) map[string]string {
+	if r, ok := repo.(AbstractRepoInf); ok {
+		return r.GetConstraintErr()
+	}
+	return map[string]string{}
 }

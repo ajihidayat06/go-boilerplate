@@ -40,7 +40,7 @@ func ValidateRequest(input interface{}, customMessages map[string]string) (bool,
 func ValidateUsername(username string) error {
 	usernameRegex := regexp.MustCompile(constanta.UsernameRegex)
 	if !usernameRegex.MatchString(username) {
-		return errors.New("invalid username format (only letters, numbers, and underscores, with a length of 3-20 characters) ")
+		return errors.New("format username tidak valid (hanya huruf, angka, dan underscores, dengan panjang 3-40 karakter) ")
 	}
 	return nil
 }
@@ -99,4 +99,24 @@ func ValidatePassword(password string) bool {
 
 func ValidateUpdatedAtRequest(request, dataDb time.Time) bool {
 	return request.Equal(dataDb)
+}
+
+func ValidateCode(code string) error {
+	codeRegex := regexp.MustCompile(constanta.UsernameRegex)
+	if !codeRegex.MatchString(code) {
+		return errors.New("format code tidak valid (hanya huruf, angka, dan underscores, dengan panjang 3-40 karakter) ")
+	}
+	return nil
+}
+
+func GenerateSlug(input string) string {
+	slug := strings.ToLower(input)
+
+	// Ganti semua non-alphanumeric (selain huruf dan angka) dengan dash
+	re := regexp.MustCompile(`[^a-z0-9]+`)
+	slug = re.ReplaceAllString(slug, "-")
+
+	slug = strings.Trim(slug, "-")
+
+	return slug
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 
@@ -31,6 +33,7 @@ var (
 	ErrInternalServerError = errors.New("internal server error")
 	ErrPasswordNotValid    = errors.New("password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters")
 	ErrDataDataUpdated     = errors.New(ErrMessageDataUpdated)
+	ErrDataAlreadyExists   = errors.New(ErrMessaageDataAlreadyExists)
 )
 
 type CustomError struct {
@@ -93,4 +96,33 @@ func HandleUsecaseError(c *fiber.Ctx, err error, msg string) error {
 
 	logger.LogWithCaller(ctx, msg, err, 2)
 	return utils.SetResponseBadRequest(c, msg, err)
+}
+
+func HandleRepoErrorWrite(ctx context.Context, err error, constraintErr map[string]string) error {
+	duplicate := "duplicate key value violates unique constraint"
+	if strings.Contains(err.Error(), duplicate) {
+		msg := GetMessageConstraintError(err, constraintErr)
+		logger.LogWithCaller(ctx, msg, ErrDataAlreadyExists, 2)
+		return HandleCustomError(ctx, err, msg)
+	}
+
+	return HandleRepoError(ctx, err)
+}
+
+func GetMessageConstraintError(err error, constraintErrorMessages map[string]string) string {
+	msg := err.Error()
+
+	start := strings.Index(msg, `"`)
+	end := strings.LastIndex(msg, `"`)
+
+	if start == -1 || end == -1 || start >= end {
+		return "Data sudah ada"
+	}
+
+	constraint := msg[start+1 : end]
+	if friendly, ok := constraintErrorMessages[constraint]; ok {
+		return friendly
+	}
+
+	return "Data sudah ada"
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"go-boilerplate/internal/dto/response"
+	"go-boilerplate/internal/models"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,11 +50,12 @@ func SetResponseNotFound(c *fiber.Ctx, message string, err error) error {
 	return SetResponseAPI(c, http.StatusNotFound, message, err.Error(), nil)
 }
 
-func MapToListResponse[T any](list []T, totalCount int64, page, pageSize int) response.ListResponse[T] {
+func MapToListResponse[T any](list []T, totalCount int64, listStruct *models.GetListStruct, filtersAvailable []string) response.ListResponse[T] {
 	return response.ListResponse[T]{
-		List:       list,
-		TotalCount: totalCount,
-		Page:       page,
-		PageSize:   pageSize,
+		List:             list,
+		TotalCount:       totalCount,
+		Page:             listStruct.Page,
+		PageSize:         listStruct.Limit,
+		FiltersAvailable: filtersAvailable,
 	}
 }

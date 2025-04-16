@@ -26,21 +26,31 @@ type categoryUseCase struct {
 	categoryRepo repo.CategoryRepository
 }
 
-func NewCategoryUseCase(categoryRepo repo.CategoryRepository) CategoryUseCase {
+func NewCategoryUseCase(db *gorm.DB, categoryRepo repo.CategoryRepository) CategoryUseCase {
 	return &categoryUseCase{
+		db:           db,
 		categoryRepo: categoryRepo,
 	}
 }
 
 func (uc *categoryUseCase) CreateCategory(ctx context.Context, req *request.ReqCategory) error {
+	err := req.ValidateRequestCreate()
+	if err != nil {
+		logger.Error(ctx, "Failed to validate request", err)
+		return err
+	}
 	userLogin, err := utils.GetUserIDFromCtx(ctx)
 	if err != nil {
 		logger.Error(ctx, "Failed to get user id from context", err)
 		return errorutils.ErrDataNotFound
 	}
 
+	// TODO: get data category by code or name
+
 	category := models.Category{
 		Name:      req.Name,
+		Code:      req.Code,
+		Slug:      req.Slug,
 		CreatedBy: userLogin,
 		UpdatedBy: userLogin,
 	}
@@ -48,7 +58,7 @@ func (uc *categoryUseCase) CreateCategory(ctx context.Context, req *request.ReqC
 	return processWithTx(ctx, uc.db, func(ctx context.Context) error {
 		err := uc.categoryRepo.Create(ctx, &category)
 		if err != nil {
-			return errorutils.HandleRepoError(ctx, err)
+			return errorutils.HandleRepoErrorWrite(ctx, err, repo.GetContraintErrMessage(uc.categoryRepo))
 		}
 		return nil
 	})
@@ -69,7 +79,7 @@ func (uc *categoryUseCase) GetListCategory(ctx context.Context, listStruct *mode
 		return response.ListResponse[response.CategoryResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	listResponse := utils.MapToListResponse(response.SetResponseListCategory(categoryDb), count, listStruct.Page, listStruct.Limit)
+	listResponse := utils.MapToListResponse(response.SetResponseListCategory(categoryDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.categoryRepo))
 	return listResponse, nil
 }
 
@@ -86,8 +96,7 @@ func (uc *categoryUseCase) UpdateCategoryByID(ctx context.Context, req *request.
 	err = processWithTx(ctx, uc.db, func(ctx context.Context) error {
 		res, err = uc.categoryRepo.UpdateCategoryByID(ctx, req.ID, req.UpdatedAt, category)
 		if err != nil {
-			logger.Error(ctx, "Failed to update category", err)
-			return err
+			return errorutils.HandleRepoErrorWrite(ctx, err, repo.GetContraintErrMessage(uc.categoryRepo))
 		}
 
 		return nil

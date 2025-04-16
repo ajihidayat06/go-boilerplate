@@ -58,7 +58,7 @@ func (uc *roleUseCase) CreateRole(ctx context.Context, req *request.ReqRoles) er
 
 	// get role by code
 	roleDB, err := uc.roleRepo.GetRoleByCode(ctx, req.Code)
-	if err == nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return errorutils.HandleRepoError(ctx, err)
 	}
 
@@ -128,7 +128,7 @@ func (uc *roleUseCase) GetListRole(ctx context.Context, listStruct *models.GetLi
 		return response.ListResponse[response.RolesResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	listResponse := utils.MapToListResponse(response.SetListResponseRole(rolesDb), count, listStruct.Page, listStruct.Limit)
+	listResponse := utils.MapToListResponse(response.SetListResponseRole(rolesDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.roleRepo))
 	return listResponse, nil
 }
 

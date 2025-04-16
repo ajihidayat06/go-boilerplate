@@ -37,7 +37,7 @@ func InitUserDahboard(db *gorm.DB) *dashboard.UserDahboardController {
 
 func InitCategoryDashboard(db *gorm.DB) *dashboard.CategoryDashboardController {
 	categoryRepo := repo.NewCategoryRepository(db)
-	categoryUC := usecase.NewCategoryUseCase(categoryRepo)
+	categoryUC := usecase.NewCategoryUseCase(db, categoryRepo)
 	categoryController := dashboard.NewCategoryController(categoryUC)
 
 	return categoryController

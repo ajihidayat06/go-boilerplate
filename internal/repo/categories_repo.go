@@ -25,6 +25,10 @@ var (
 		"name": "name",
 	}
 	JoinsCategory = map[string]string{}
+	ConstraintErrorMessages = map[string]string{
+		"idx_categories_code": "Kode kategori sudah digunakan",
+		"idx_categories_slug": "Nama kategori sudah digunakan",
+	}
 )
 
 func NewCategoryRepository(db *gorm.DB) CategoryRepository {
@@ -33,6 +37,7 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 			db:          db,
 			FilterAlias: FilterCategory,
 			Joins:       JoinsCategory,
+			ConstraintError: ConstraintErrorMessages,
 		},
 	}
 }
@@ -51,7 +56,7 @@ func (r *categoryRepository) GetCategoryByID(ctx context.Context, id int64) (mod
 }
 
 func (r *categoryRepository) GetListCategory(ctx context.Context, listStruct *models.GetListStruct) ([]models.Category, int64, error) {
-	var users []models.Category
+	var categories []models.Category
 	var total int64
 
 	err := r.db.WithContext(ctx).
@@ -63,14 +68,14 @@ func (r *categoryRepository) GetListCategory(ctx context.Context, listStruct *mo
 	}
 
 	err = r.db.WithContext(ctx).
-		Model(&models.User{}).Preload("Roles").
+		Model(&models.Category{}).
 		Scopes(r.applyFiltersAndPaginationAndOrder(listStruct)).
-		Find(&users).Error
+		Find(&categories).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return users, total, nil
+	return categories, total, nil
 }
 
 func (r *categoryRepository) UpdateCategoryByID(ctx context.Context, id int64, updatedAt time.Time, category models.Category) (models.Category, error) {

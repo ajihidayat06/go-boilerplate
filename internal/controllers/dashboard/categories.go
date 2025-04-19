@@ -65,7 +65,7 @@ func (ctrl *CategoryDashboardController) GetListCategory(c *fiber.Ctx) error {
 
 	response, err := ctrl.CategoryUseCase.GetListCategory(ctx, utils.GetFiltersAndPagination(c))
 	if err != nil {
-		return errorutils.HandleUsecaseError(c, err, "Failed get list user")
+		return errorutils.HandleUsecaseError(c, err, "Failed get list category")
 	}
 
 	return utils.SetResponseOK(c, "success get list user", response)
@@ -95,8 +95,7 @@ func (ctrl *CategoryDashboardController) UpdateCategoryByID(c *fiber.Ctx) error 
 
 	response, err := ctrl.CategoryUseCase.UpdateCategoryByID(ctx, &reqUpdate)
 	if err != nil {
-		logger.Error(ctx, "Failed update category", err)
-		return utils.SetResponseBadRequest(c, "Failed update category", err)
+		return errorutils.HandleUsecaseError(c, err, "Failed update category")
 	}
 
 	return utils.SetResponseOK(c, "success update category", response)

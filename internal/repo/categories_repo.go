@@ -14,6 +14,7 @@ type CategoryRepository interface {
 	GetListCategory(ctx context.Context, listStruct *models.GetListStruct) ([]models.Category, int64, error)
 	UpdateCategoryByID(ctx context.Context, id int64, updatedAt time.Time, category models.Category) (models.Category, error)
 	DeleteCategoryByID(ctx context.Context, id int64, updatedAt time.Time) error
+	GetCategoryByNameOrCode(ctx context.Context, name string, code string) (models.Category, error)
 }
 
 type categoryRepository struct {
@@ -101,4 +102,15 @@ func (r *categoryRepository) DeleteCategoryByID(ctx context.Context, id int64, u
 		return err
 	}
 	return nil
+}
+
+func (r *categoryRepository) GetCategoryByNameOrCode(ctx context.Context, name string, code string) (models.Category, error) {
+	var category models.Category
+	err := r.db.WithContext(ctx).
+		Where("name = ? OR code = ?", name, code).
+		First(&category).Error
+	if err != nil {
+		return models.Category{}, err
+	}
+	return category, nil
 }

@@ -1,12 +1,20 @@
-package utils
+package response
 
 import (
-	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/models"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+// ListResponse is a generic struct for API responses that return a list of data.
+type ListResponse[T any] struct {
+	List             []T      `json:"list"`              // The list of items
+	TotalCount       int64    `json:"total_count"`       // Total number of items available
+	Page             int      `json:"page"`              // Current page number
+	PageSize         int      `json:"page_size"`         // Number of items per page
+	FiltersAvailable []string `json:"filters_available"` // Filters applied to the list
+}
 
 type APIResponse struct {
 	Status  int         `json:"status"`
@@ -50,8 +58,8 @@ func SetResponseNotFound(c *fiber.Ctx, message string, err error) error {
 	return SetResponseAPI(c, http.StatusNotFound, message, err.Error(), nil)
 }
 
-func MapToListResponse[T any](list []T, totalCount int64, listStruct *models.GetListStruct, filtersAvailable []string) response.ListResponse[T] {
-	return response.ListResponse[T]{
+func MapToListResponse[T any](list []T, totalCount int64, listStruct *models.GetListStruct, filtersAvailable []string) ListResponse[T] {
+	return ListResponse[T]{
 		List:             list,
 		TotalCount:       totalCount,
 		Page:             listStruct.Page,

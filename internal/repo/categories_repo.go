@@ -15,6 +15,7 @@ type CategoryRepository interface {
 	UpdateCategoryByID(ctx context.Context, id int64, updatedAt time.Time, category models.Category) (models.Category, error)
 	DeleteCategoryByID(ctx context.Context, id int64, updatedAt time.Time) error
 	GetCategoryByNameOrCode(ctx context.Context, name string, code string) (models.Category, error)
+	GetCategoryByListIDs(ctx context.Context, ids []int64) ([]models.Category, error)
 }
 
 type categoryRepository struct {
@@ -25,7 +26,7 @@ var (
 	FilterCategory = map[string]string{
 		"name": "name",
 	}
-	JoinsCategory = map[string]string{}
+	JoinsCategory           = map[string]string{}
 	ConstraintErrorMessages = map[string]string{
 		"idx_categories_code": "Kode kategori sudah digunakan",
 		"idx_categories_slug": "Nama kategori sudah digunakan",
@@ -35,9 +36,9 @@ var (
 func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 	return &categoryRepository{
 		AbstractRepo: AbstractRepo{
-			db:          db,
-			FilterAlias: FilterCategory,
-			Joins:       JoinsCategory,
+			db:              db,
+			FilterAlias:     FilterCategory,
+			Joins:           JoinsCategory,
 			ConstraintError: ConstraintErrorMessages,
 		},
 	}
@@ -113,4 +114,13 @@ func (r *categoryRepository) GetCategoryByNameOrCode(ctx context.Context, name s
 		return models.Category{}, err
 	}
 	return category, nil
+}
+
+func (r *categoryRepository) GetCategoryByListIDs(ctx context.Context, ids []int64) ([]models.Category, error) {
+	var categories []models.Category
+	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&categories).Error
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
 }

@@ -66,3 +66,13 @@ func RolePermissionsRoutesDashboard(api fiber.Router, handler *dashboard.RolePer
 	rolePermissions.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionUpdate), middleware.CheckAdminRoleMiddleware(), handler.UpdateRolePermissionByID)
 	rolePermissions.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuRolePermissionsActionDelete), middleware.CheckAdminRoleMiddleware(), handler.DeleteRolePermissionByID)
 }
+
+func ProductRoutesdashboard(api fiber.Router, handler *dashboard.ProductDashboardController) {
+	// Protected routes
+	category := api.Group("/product")
+	category.Post("/", middleware.AuthMiddlewareDashboard(constanta.MenuProductActionCreate), handler.CreateProduct)
+	category.Get("/", middleware.AuthMiddlewareDashboard(constanta.MenuProductActionRead), handler.GetListProduct)
+	category.Get("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuProductActionRead), handler.GetProductByID)
+	category.Put("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuProductActionUpdate), handler.UpdateProductByID)
+	category.Delete("/:id", middleware.AuthMiddlewareDashboard(constanta.MenuProductActionDelete), handler.DeleteProductByID)
+}

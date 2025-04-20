@@ -102,8 +102,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 CREATE TABLE IF NOT EXISTS product (
     id bigserial NOT NULL,
     name VARCHAR NOT NULL,
-    code VARCHAR NOT NULL UNIQUE,         
-    barcode VARCHAR UNIQUE,               -- Barcode scanner support
+    code VARCHAR NOT NULL,         
+    barcode VARCHAR,               -- Barcode scanner support
     description TEXT,
     brand VARCHAR,
     unit VARCHAR DEFAULT 'pcs',
@@ -116,20 +116,20 @@ CREATE TABLE IF NOT EXISTS product (
     created_by INTEGER,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
-    CONSTRAINT product_pkey PRIMARY KEY (id)
+    CONSTRAINT product_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_product_code UNIQUE (code)
 );
 
 CREATE TABLE IF NOT EXISTS product_categories (
     id bigserial NOT NULL,
     product_id INTEGER NOT NULL REFERENCES product(id) ON DELETE CASCADE,
     categories_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
     CONSTRAINT product_categories_pkey PRIMARY KEY (id),
-    UNIQUE (product_id, categories_id)
+    CONSTRAINT unique_product_categories_product_id_categories_id UNIQUE (product_id, categories_id)
 );
 
 CREATE TABLE IF NOT EXISTS product_varian (
@@ -146,7 +146,8 @@ CREATE TABLE IF NOT EXISTS product_varian (
     created_by INTEGER,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by INTEGER,
-    CONSTRAINT product_varian_pkey PRIMARY KEY (id)
+    CONSTRAINT product_varian_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_product_varian_code UNIQUE (code)
 );
 
 -- +migrate Down

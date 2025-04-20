@@ -17,7 +17,7 @@ type UserResponse struct {
 	UpdatedAt time.Time     `json:"updated_at"`
 	CreatedBy int64         `json:"created_by"`
 	UpdatedBy int64         `json:"updated_by"`
-	Roles     *RolesResponse `json:"roles,omoitempty"`
+	Roles     *RolesResponse `json:"roles,omitempty"`
 }
 
 func SetListResponse(user models.User) UserResponse {

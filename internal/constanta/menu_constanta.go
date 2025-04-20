@@ -6,6 +6,7 @@ const (
 	MenuGroupRole            = "role"
 	MenuGroupPermissions     = "permissions"
 	MenuGroupRolePermissions = "role_permissions"
+	MenuGroupProduct         = "product"
 )
 
 const (
@@ -33,6 +34,11 @@ const (
 	MenuRolePermissionsActionCreate = MenuGroupRolePermissions + ":" + AuthActionCreate
 	MenuRolePermissionsActionUpdate = MenuGroupRolePermissions + ":" + AuthActionUpdate
 	MenuRolePermissionsActionDelete = MenuGroupRolePermissions + ":" + AuthActionDelete
+
+	MenuProductActionCreate = MenuGroupProduct + ":" + AuthActionCreate
+	MenuProductActionRead   = MenuGroupProduct + ":" + AuthActionRead
+	MenuProductActionUpdate = MenuGroupProduct + ":" + AuthActionUpdate
+	MenuProductActionDelete = MenuGroupProduct + ":" + AuthActionDelete
 )
 
 const (
@@ -40,4 +46,5 @@ const (
 	FieldCode        = "CODE"
 	FieldName        = "NAME"
 	FieldPermissions = "PERMISSIONS"
+	FieldCategory    = "CATEGORY"
 )

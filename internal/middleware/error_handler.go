@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 	"runtime"
@@ -12,14 +13,14 @@ import (
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	ctx := utils.GetContext(c)
-	
+
 	logger.Error(ctx, "Unhandled error", err)
 	code := fiber.StatusInternalServerError
 	if e, ok := err.(*fiber.Error); ok {
 		code = e.Code
 	}
 
-	return utils.SetResponseAPI(c, code, "unhandled error", err.Error(), nil)
+	return response.SetResponseAPI(c, code, "unhandled error", err.Error(), nil)
 }
 
 func RecoverMiddleware() fiber.Handler {
@@ -49,7 +50,7 @@ func RecoverMiddleware() fiber.Handler {
 				fmt.Println(logMessage) // Cetak ke terminal
 
 				// Kirim respons umum ke client
-				_ = utils.SetResponseAPI(c, fiber.StatusInternalServerError, "Internal Server Error", "An unexpected error occurred. Please try again later.", nil)
+				_ = response.SetResponseAPI(c, fiber.StatusInternalServerError, "Internal Server Error", "An unexpected error occurred. Please try again later.", nil)
 			}
 		}()
 		return c.Next()

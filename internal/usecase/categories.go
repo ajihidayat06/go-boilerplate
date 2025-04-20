@@ -82,7 +82,7 @@ func (uc *categoryUseCase) GetListCategory(ctx context.Context, listStruct *mode
 		return response.ListResponse[response.CategoryResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	listResponse := utils.MapToListResponse(response.SetResponseListCategory(categoryDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.categoryRepo))
+	listResponse := response.MapToListResponse(response.SetResponseListCategory(categoryDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.categoryRepo))
 	return listResponse, nil
 }
 

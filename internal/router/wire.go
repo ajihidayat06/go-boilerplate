@@ -68,3 +68,13 @@ func InitRolePermissionsDashboard(db *gorm.DB) *dashboard.RolePermissionsControl
 
 	return rolePermissionsController
 }
+
+func InitProductDashboard(db *gorm.DB) *dashboard.ProductDashboardController {
+	categoryrepo := repo.NewCategoryRepository(db)
+	productCategoryrepo := repo.NewProductCategoryRepository(db)
+	productRepo := repo.NewProductRepository(db)
+	productUC := usecase.NewProductUseCase(db, productRepo, categoryrepo, productCategoryrepo)
+	productController := dashboard.NewProductController(productUC)
+
+	return productController
+}

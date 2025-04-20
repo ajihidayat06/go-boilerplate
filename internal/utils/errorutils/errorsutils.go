@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/pkg/logger"
 
@@ -86,16 +87,16 @@ func HandleUsecaseError(c *fiber.Ctx, err error, msg string) error {
 
 	if errors.Is(err, ErrDataNotFound) {
 		logger.LogWithCaller(ctx, ErrMessageDataNotFound, err, 2)
-		return utils.SetResponseNotFound(c, ErrMessageDataNotFound, err)
+		return response.SetResponseNotFound(c, ErrMessageDataNotFound, err)
 	}
 
 	if errors.Is(err, ErrInternalServerError) {
 		logger.LogWithCaller(ctx, ErrInternalServerError.Error(), err, 2)
-		return utils.SetResponseInternalServerError(c, ErrMessageInternalServerError, err)
+		return response.SetResponseInternalServerError(c, ErrMessageInternalServerError, err)
 	}
 
 	logger.LogWithCaller(ctx, msg, err, 2)
-	return utils.SetResponseBadRequest(c, msg, err)
+	return response.SetResponseBadRequest(c, msg, err)
 }
 
 func HandleRepoErrorWrite(ctx context.Context, err error, constraintErr map[string]string) error {

@@ -14,7 +14,7 @@ var ReqCategoryErrorMessage = map[string]string{
 }
 
 func (r *ReqCategory) ValidateRequestCreate() error {
-	err := utils.ValidateUsername(r.Code)
+	err := utils.ValidateCode(r.Code)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ var ReqCategoryUpdateErrorMessage = map[string]string{
 	"ID":        "id required",
 	"Name":      "name required",
 	"Code":      "code required",
-	"UpdatedAt": "updated_at required",
+	"UpdateddAtStr": "updated_at required",
 }
 
 func (r *ReqCategoryUpdate) ValidateRequestUpdate() error {

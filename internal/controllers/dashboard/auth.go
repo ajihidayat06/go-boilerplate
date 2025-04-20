@@ -29,7 +29,7 @@ func (ctrl *AuthController) LogoutDashboard(c *fiber.Ctx) error {
 
 	authHeader := c.Get("Authorization")
 	if authHeader == "" {
-		return utils.SetResponseBadRequest(c, "Missing Authorization header", nil)
+		return response.SetResponseBadRequest(c, "Missing Authorization header", nil)
 	}
 
 	tokenString := utils.ExtractBearerToken(authHeader)
@@ -38,10 +38,10 @@ func (ctrl *AuthController) LogoutDashboard(c *fiber.Ctx) error {
 	err := middleware.DeleteTokenFromRedis(ctx, tokenString)
 	if err != nil {
 		logger.Error(ctx, "Failed to delete token from Redis", err)
-		return utils.SetResponseInternalServerError(c, "Failed to logout", err)
+		return response.SetResponseInternalServerError(c, "Failed to logout", err)
 	}
 
-	return utils.SetResponseOK(c, "Successfully logged out", nil)
+	return response.SetResponseOK(c, "Successfully logged out", nil)
 }
 
 func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
@@ -50,29 +50,29 @@ func (ctrl *AuthController) ValidateCredentials(c *fiber.Ctx) error {
 	var reqLogin request.ReqLogin
 	if err := c.BodyParser(&reqLogin); err != nil {
 		logger.Error(ctx, "Failed to parse login request", err)
-		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
+		return response.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	err := reqLogin.ValidateRequest(ctx)
 	if err != nil {
-		return utils.SetResponseBadRequest(c, "Invalid username or password", err)
+		return response.SetResponseBadRequest(c, "Invalid username or password", err)
 	}
 
 	// Validasi kredensial
 	user, err := ctrl.AuthUsecase.LoginDashboard(ctx, &reqLogin)
 	if err != nil {
 		logger.Error(ctx, "error LoginDashboard", err)
-		return utils.SetResponseBadRequest(c, "Login Failed, Invalid username or password", err)
+		return response.SetResponseBadRequest(c, "Login Failed, Invalid username or password", err)
 	}
 
 	// Generate temporary token
 	temporaryToken, err := middleware.GenerateTemporaryToken(user)
 	if err != nil {
 		logger.Error(ctx, "Failed to generate temporary token", err)
-		return utils.SetResponseInternalServerError(c, "Failed generate token", err)
+		return response.SetResponseInternalServerError(c, "Failed generate token", err)
 	}
 
-	return utils.SetResponseOK(c, "Temporary token generated", response.ResAuth{Token: temporaryToken})
+	return response.SetResponseOK(c, "Temporary token generated", response.ResAuth{Token: temporaryToken})
 }
 
 func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
@@ -84,32 +84,32 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	)
 	if err = c.BodyParser(&reqToken); err != nil {
 		logger.Error(ctx, "Failed to parse token request", err)
-		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
+		return response.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	err = reqToken.ValidateRequest(ctx)
 	if err != nil {
-		return utils.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
+		return response.SetResponseBadRequest(c, errorutils.ErrMessageInvalidRequestData, err)
 	}
 
 	// Validasi temporary token
 	user, err := middleware.ValidateTemporaryToken(reqToken.TemporaryToken)
 	if err != nil {
 		logger.Error(ctx, "Invalid temporary token", err)
-		return utils.SetResponseUnauthorized(c, "Invalid or expired temporary token", err.Error())
+		return response.SetResponseUnauthorized(c, "Invalid or expired temporary token", err.Error())
 	}
 
 	// Generate access token
 	user, err = ctrl.AuthUsecase.LoginByUserId(ctx, user.ID)
 	if err != nil {
 		logger.Error(ctx, "Error GetUserByID", err)
-		return utils.SetResponseUnauthorized(c, errorutils.ErrMessageDataNotFound, err.Error())
+		return response.SetResponseUnauthorized(c, errorutils.ErrMessageDataNotFound, err.Error())
 	}
 
 	accessToken, err := middleware.GenerateTokenUserDashboard(user)
 	if err != nil {
 		logger.Error(ctx, "Failed to generate access token", err)
-		return utils.SetResponseInternalServerError(c, "Failed to generate access token", err)
+		return response.SetResponseInternalServerError(c, "Failed to generate access token", err)
 	}
 
 	// Simpan access token di Redis
@@ -120,8 +120,8 @@ func (ctrl *AuthController) GenerateAccessToken(c *fiber.Ctx) error {
 	err = middleware.SaveTokenToRedis(ctx, accessToken, exp)
 	if err != nil {
 		logger.Error(ctx, "Failed to save access token to Redis", err)
-		return utils.SetResponseInternalServerError(c, "Failed to save access token", err)
+		return response.SetResponseInternalServerError(c, "Failed to save access token", err)
 	}
 
-	return utils.SetResponseOK(c, "Access token generated", response.ResAuth{Token: accessToken})
+	return response.SetResponseOK(c, "Access token generated", response.ResAuth{Token: accessToken})
 }

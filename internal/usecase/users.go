@@ -138,7 +138,7 @@ func (u *userUseCase) GetListUser(ctx context.Context, listStruct *models.GetLis
 		return response.ListResponse[response.UserResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	listResponse := utils.MapToListResponse(response.SetResponseListUser(userDb), count, listStruct, repo.GetFilterAvailableFromRepo(u.UserRepo))
+	listResponse := response.MapToListResponse(response.SetResponseListUser(userDb), count, listStruct, repo.GetFilterAvailableFromRepo(u.UserRepo))
 	return listResponse, nil
 }
 

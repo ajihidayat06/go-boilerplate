@@ -58,11 +58,12 @@ type ReqUserUpdate struct {
 }
 
 var ReqUserUpdateErrorMessage = map[string]string{
-	"id":       "id required",
-	"name":     "name required",
-	"email":    "email not valid",
-	"username": "username required",
-	"password": "password required",
+	"ID":            "id required",
+	"Name":          "name required",
+	"Email":         "email not valid",
+	"Username":      "username required",
+	"Password":      "password required",
+	"UpdateddAtStr": "updated_at required",
 }
 
 func (r *ReqUserUpdate) ValidateRequestUpdate() error {

@@ -24,6 +24,6 @@ var ReqRoleUpdateErrorMessage = map[string]string{
 	"ID":           "id required",
 	"Code":         "code required",
 	"Name":         "name required",
-	"UpdatedAt":    "updated_at required",
+	"UpdateddAtStr":    "updated_at required",
 	"PermissionID": "Permission ID required",
 }

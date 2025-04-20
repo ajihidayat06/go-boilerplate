@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go-boilerplate/internal/constanta"
+	"go-boilerplate/internal/dto/response"
 	"go-boilerplate/internal/models"
 	"go-boilerplate/internal/utils"
 	"go-boilerplate/internal/utils/errorutils"
@@ -49,7 +50,7 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			logger.Error(ctx, "Missing Authorization header", nil)
-			return utils.SetResponseUnauthorized(c, "Missing Authorization header", "")
+			return response.SetResponseUnauthorized(c, "Missing Authorization header", "")
 		}
 
 		// Hapus prefix "Bearer " jika ada
@@ -65,29 +66,29 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 			return []byte(secret), nil
 		})
 		if err != nil {
-			return utils.SetResponseUnauthorized(c, errorutils.ErrMessageInvalidOrExpiredToken, "")
+			return response.SetResponseUnauthorized(c, errorutils.ErrMessageInvalidOrExpiredToken, "")
 		}
 
 		// Ambil claims dan periksa validitas token
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
-			return utils.SetResponseUnauthorized(c, errorutils.ErrMessageInvalidToken, "")
+			return response.SetResponseUnauthorized(c, errorutils.ErrMessageInvalidToken, "")
 		}
 
 		// Periksa token di Redis
 		isValid, err := IsTokenInRedis(c.Context(), tokenString)
 		if err != nil {
 			logger.Error(ctx, "Failed to validate token in Redis", err)
-			return utils.SetResponseInternalServerError(c, "Failed to validate token", err)
+			return response.SetResponseInternalServerError(c, "Failed to validate token", err)
 		}
 		if !isValid {
-			return utils.SetResponseUnauthorized(c, "Token is not valid", "")
+			return response.SetResponseUnauthorized(c, "Token is not valid", "")
 		}
 
 		// Cek expired
 		exp := int64(claims["exp"].(float64))
 		if time.Now().Unix() > exp {
-			return utils.SetResponseUnauthorized(c, errorutils.ErrMessageExpiredToken, "")
+			return response.SetResponseUnauthorized(c, errorutils.ErrMessageExpiredToken, "")
 		}
 
 		// Konversi role_permissions ke []models.RolePermissions
@@ -113,12 +114,12 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 		// Ambil role_permissions dari token
 		rawPermissions, exists := claims["role_permissions"]
 		if !exists {
-			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
+			return response.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
 
 		permissionsData, ok := rawPermissions.([]interface{})
 		if !ok {
-			return utils.SetResponseForbiden(c, "Invalid permissions data")
+			return response.SetResponseForbiden(c, "Invalid permissions data")
 		}
 
 		var rolePermissions []models.RolePermissions
@@ -133,14 +134,14 @@ func AuthMiddlewareDashboard(menuAction string) fiber.Handler {
 				}
 				rolePermissions = append(rolePermissions, rolePermission)
 			} else {
-				return utils.SetResponseForbiden(c, "Invalid permissions format")
+				return response.SetResponseForbiden(c, "Invalid permissions format")
 			}
 		}
 
 		// Validasi apakah user memiliki permission sesuai menuAction
 		isValid, scope := validateUserScopePermissionDashboard(rolePermissions, menuAction)
 		if !isValid {
-			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
+			return response.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
 
 		// Simpan user_id dan scope ke context agar bisa digunakan di handler selanjutnya
@@ -170,7 +171,7 @@ func CheckAdminRoleMiddleware() fiber.Handler {
 		isAdmin := ctx.Value(constanta.IsAdmin).(bool)
 		if (roleCode != constanta.RoleCodeAdmin && roleCode != constanta.RoleCodeSuperAdmin) || !isAdmin {
 			logger.Error(ctx, "User does not have admin role", nil)
-			return utils.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
+			return response.SetResponseForbiden(c, errorutils.ErrMessageForbidden)
 		}
 		return c.Next()
 	}
@@ -211,7 +212,7 @@ func AuthMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return utils.SetResponseUnauthorized(c, "Missing Authorization header", "")
+			return response.SetResponseUnauthorized(c, "Missing Authorization header", "")
 		}
 
 		tokenString := utils.ExtractBearerToken(authHeader)
@@ -224,16 +225,16 @@ func AuthMiddleware() fiber.Handler {
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 		if err != nil {
-			return utils.SetResponseUnauthorized(c, "Invalid token", err.Error())
+			return response.SetResponseUnauthorized(c, "Invalid token", err.Error())
 		}
 
 		// Periksa token di Redis
 		isValid, err := IsTokenInRedis(c.Context(), tokenString)
 		if err != nil {
-			return utils.SetResponseInternalServerError(c, "Failed to validate token", err)
+			return response.SetResponseInternalServerError(c, "Failed to validate token", err)
 		}
 		if !isValid {
-			return utils.SetResponseUnauthorized(c, "Token is not valid", "")
+			return response.SetResponseUnauthorized(c, "Token is not valid", "")
 		}
 
 		// Simpan informasi user ke context

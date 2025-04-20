@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"go-boilerplate/internal/constanta"
+	"math"
 	"regexp"
 	"strings"
 	"time"
@@ -119,4 +120,8 @@ func GenerateSlug(input string) string {
 	slug = strings.Trim(slug, "-")
 
 	return slug
+}
+
+func RoundTo2Digits(value float64) float64 {
+	return math.Round(value*100) / 100
 }

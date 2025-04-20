@@ -128,7 +128,7 @@ func (uc *roleUseCase) GetListRole(ctx context.Context, listStruct *models.GetLi
 		return response.ListResponse[response.RolesResponse]{}, errorutils.HandleRepoError(ctx, err)
 	}
 
-	listResponse := utils.MapToListResponse(response.SetListResponseRole(rolesDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.roleRepo))
+	listResponse := response.MapToListResponse(response.SetListResponseRole(rolesDb), count, listStruct, repo.GetFilterAvailableFromRepo(uc.roleRepo))
 	return listResponse, nil
 }
 
